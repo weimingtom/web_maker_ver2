@@ -1,0 +1,11 @@
+# ●最初
+■背景、ワイプ、data/bg/bg019.jpg
+
+■キャラ、右、カット、data/char/little/05_kurugaya_yuiko01.png
+■キャラ、左、カット、data/char/little/05_natsume_rin01.png
+【ｍ】「ごきげんよう。この度はこの『うぇぶげーメイカー』を触ってくださりありがとうございます」
+■キャラ、左、カット、data/char/little/05_hutaki_kanata01.png
+【ｍ】「私はｍと申します。今から少しの時間にはなりますがよろしくお願いします。」
+■キャラ、左、カット、data/char/little/05_noumi_kudo01.png
+「恭介照れ顔」をメモ帳などの置き換え機能で一気にパスに置き換えています」
+■ジャンプ、●最初

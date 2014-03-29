@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+
+<head>
+	<META name="robots" content="index,follow">
+	<META name="author" content="TRAFFIC JAM">
+	<META name="description" content="ある日、突然同人活動をし始めたページ。SS、イラストメイン、リトルバスターズ、魔法少女まどか☆マギカなど">
+	<META name="Keywords" content="ゲーム作り,ゲーム創作,二次創作,ツール,スクリプト,スクリプター,script,スクリプトエンジン,WEBゲーム,html5,同人ゲーム,素材,リトルバスターズ,魔法少女まどか☆マギカ,東方,同人,ゲーム,アニメ塗り,CG,フリーソフト,セル塗り,フリーウェア,花ざかりの理樹たちへ,立ち絵,フリー素材,小説,オリジナル">
+
+	<meta http-equiv="Content-Type" content="text/html; charset=shift_jis" />
+    <meta http-equiv="Content-Language" content="ja" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <link rel="stylesheet" href="css/css01.css" type="text/css" />
+    <link rel="stylesheet" href="css/css02.css" type="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+	<meta http-equiv="X-UA-Compatible" content="IE=IE9">
+	
+	
+	
+	<!--[if IE]><script type="text/javascript" src="scr/excanvas.js"></script><![endif]-->
+	<script src="little03.js" type="text/javascript" charset="shift_jis"></script>
+	<script src="scr/common2.js" type="text/javascript" charset="shift_jis"></script>
+	<script src="scr/command.js" type="text/javascript" charset="shift_jis"></script>
+	<script src="scr/tj_game.js" type="text/javascript" charset="shift_jis"></script>
+	<script type="text/javascript" src="http://milk0824.sakura.ne.jp/cgi-bin/acc/acctag.js"></script>
+	
+	<title>うぇぶげーメイカー</title>
+</head>
+
+<body topmargin="0" leftmargin="0" rightmargin="0" marginheight="0" marginwidth="0">
+<div class="header"><a href="http://milk0824.sakura.ne.jp/doukana/"><img src="data/sys/TJ_logo.png" title="Traffic Jam" border="0"></a></div>
+
+
+<center>
+<!-- メイン画面 -->
+<a name="gameTop">
+<div class="game_main" oncontextmenu="erese_wnd()">
+<p>
+<table><tr>
+<td><canvas width="800" height="600" id="g_can"></canvas></td>
+<td><div id="nextArea"></div></td>
+</tr></table>
+</p>
+	<div id="opt_area">
+	
+	</div>
+</div>
+
+<!-- バックログ表示領域 -->
+<div id="back_log">
+</div>
+
+<!-- 版権情報など-->
+<div align="right" class="copy_right"><p><a href="http://milk0824.sakura.ne.jp/doukana/" target="_blank">Powerd by Traffic Jam</a>
+<center>
+WEB拍手
+<a href="http://milk0824.sakura.ne.jp/cgi-bin/webclap/clap.cgi" target="_blank"><IMG src="data/sys/clapping_24.gif" border="0" alt="WEB拍手ぱちぱちっと"></a>
+</center>
+<br>
+<br>
+<a href="http://milk0824.sakura.ne.jp/web_maker/">フリーＷＥＢゲームメイカー『うぇぶげーメイカー』で作成しております。</a><br>
+<a href="little03.txt" target="_blank">このスクリプトを見る</a><br>
+</p></div>
+<div align="right" class="copy_right" id="version_info"></div>
+</center>
+
+
+<!-- デバックモード時の表示箇所-->
+<span id="test_view"></span>
+
+
+
+<!-- バッファ領域-->
+<div class="buffer_area">
+	<center>
+
+
+	<img id="char_00" src="">
+	<img id="char_01" src="">
+	<img id="char_02" src="">
+	<img id="char_03" src="">
+	<img id="char_04" src="">
+
+	<img id="bg_00" src="">
+	<img id="bg_01" src="">
+	<img id="bg_02" src="">
+	<img id="bg_03" src="">
+	<img id="bg_04" src="">
+	<h1>buff_image</h1>
+	<img id="buff_image" src="">
+
+	<img id="sys_01" src="data/sys/msg_wnd.png">
+	<img id="sys_02" src="data/sys/select_wnd.png">
+	<h1>buff</h1>
+	<canvas width="800" height="600" id="g_buff"></canvas>
+	</center>
+	
+	<audio id="bgm" loop>
+		<source src="" type="audio/ogg">
+		<source src="" type="audio/mpeg">
+		<source src="" type="audio/wav">
+
+		<p>audioが未対応です</p>
+
+	</audio>
+</div>
+
+</body>
+
+</html>

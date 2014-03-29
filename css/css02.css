@@ -1,0 +1,23 @@
+
+.header{
+	background-color: #8fb800;
+	text-align: right;
+	padding:2px;
+}
+
+.footer{
+	height:24px;
+	background-color: #8fb800;
+	text-align: center;
+	padding:2px;
+}
+.footer a{
+	color:#ffffff
+}
+
+
+hr{
+	width:80%;
+	border-top: 5px #9999ee dotted;
+
+}

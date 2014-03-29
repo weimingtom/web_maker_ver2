@@ -1,0 +1,132 @@
+<html>
+
+<head>
+<title>エンコードのやり方</title>
+<meta http-equiv="content-type" content="text/html; charset=Shift_JIS">
+<style type="text/css">
+body{
+	color:#6666cc;
+}
+p{
+	line-height:1.5em;
+}
+ul{
+	line-height:1em;
+}
+.ex{
+	color:#000000;
+	margin-top:5em;
+	margin-bottom:5em;
+}
+h1{
+	background-image:url("data/bg2.jpg");
+	background-repeat:repeat;
+	padding:5px;
+	text-align:center;
+}
+
+hr{
+	border-top: 10px #4444aa dotted;
+	margin-top:5em;
+	margin-bottom:5em;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<h1>★エンコードのやり方</h1>
+
+<p>
+テキストに書いたスクリプトは、『エンコード』をしてはじめて完成します。<br>
+エンコードとは、書いたスクリプトをうぇぶメイカーで使えるテキストの形に整えることです。<br>
+</p>
+
+<h2>やりかた</h2>
+
+<p>
+<table width="640px"><tr>
+<td><img src="data/encoder.jpg" title="エンコーダー"><br>exeバージョンエンコーダー</td>
+<td><a href="http://milk0824.sakura.ne.jp/web_maker_ver_tj/encoder_HTMLver.html" target="_blank" ><img src="data/001.png" title="HTMLバージョンエンコーダー" border="0"><br>HTMLバージョンエンコーダー</a></td>
+</tr></table>
+</p>
+<hr>
+<p>
+■exeバージョンエンコーダーの説明<br><br>
+
+１．index.htmlがある場所に<b>『encoder.exe』</b>があります。これを起動してください。<br>
+２．起動後、あなたが書いたスクリプトを開いてください。（※もしものことがありますので、バックアップを忘れずに！）<br>
+３．すぐに保存画面が現れます。<br>
+４．<b>『story.js』</b>に上書きして保存してください。<br>
+５．完成！<br>
+</p>
+
+<hr>
+
+<p>
+■<a href="http://milk0824.sakura.ne.jp/web_maker_ver_tj/encoder_HTMLver.html" target="_blank">HTMLバージョンエンコーダー</a>の説明<br><br>
+<br>
+０．パソコン上（ローカル）で変換を行うとき、InternetExplorerを使うと以下のようなボックスが現れます。<br>
+ブロックされたコンテンツを許可してください。<br>
+FirefoxやGoogle Chromeをお使いの場合はでてきません。<br>
+<img src="data/002.png"><br>
+<br>
+<br>
+<br>
+１．上のテキストエリアに、あなたの書いたシナリオを貼り付けてください。<br>
+<img src="data/003.png"><br>
+<br>
+<br>
+<br>
+２．変換ボタンを押してください。<br>
+<img src="data/004.png"><br>
+<br>
+<br>
+<br>
+４．ダイアログがでますので、ＯＫを押してください。<br>
+<img src="data/005.png"><br>
+<br>
+<br>
+<br>
+５．変換結果が表示されますので、それを全てコピーしてください。<br>
+<img src="data/006.png"><br>
+<br>
+<br>
+<br>
+６．メモ帳か何かでファイルを作って、それに５．でコピーした変換結果を貼り付けてください。（または直接story.jsの中身に貼り付けてください）<br>
+<img src="data/007.png"><br>
+<br>
+<br>
+<br>
+７．ファイル名を「story.js」に変更してください。<br>
+<img src="data/008.png"><br>
+<br>
+<br>
+<br>
+８．index.htmlと同じ場所にstory.jsをおいて完成です。<br>
+
+
+
+</p>
+<hr>
+<p>
+<pre>
+雑談
+エンコーダーで何を処理しているかを書いておきます。
+エンコーダーでは、書いたスクリプトをfile_dataという配列変数に代入しています。
+
+簡単に言うと、最初の行にvar file_data=new Array(を追加して、全ての行の最初と最後を''でくくっているだけです（笑）
+javascriptを知っている人はstory.jsを見るのが手っ取り早いかと思います。
+
+story.jsはindex.htmlで読み込んでいます。
+ここのstory.js部分を変更すれば別の名前などに設定できます。
+</pre>
+
+</body>
+</html>
+
+
+
+
