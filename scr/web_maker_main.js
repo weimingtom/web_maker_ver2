@@ -21,6 +21,7 @@ var click_flag = true;			//Click control
 var data = new Array();
 
 var msg_wnd;
+var main_screen;
 var sub_screen;
 
 var bg_load_url = new Array();
@@ -71,17 +72,17 @@ window.onload = function () {
 
 	game.onload = function(){
 
-		var main_screen = new MAINSCREEN();
+		main_screen = new MAINSCREEN();
 		sub_screen = new SUBSCREEN(main_screen);
 		msg_wnd = new MSGWINDOW();
 
 
 		game.rootScene.addEventListener(Event.TOUCH_START, function(e) {
-				clickSelector(main_screen);
+				clickSelector();
 		});
 		//メインを登録
 		game.rootScene.addEventListener('enterframe',main);
-		clickSelector(main_screen);
+		clickSelector();
 	};
 
 	game.start();
@@ -97,24 +98,28 @@ function main(){
 }
 
 /////////////////////////////////////////////////クリックロック時は何もしない(クリック実態）
-function clickSelector(main_screen){
+function clickSelector(){
+	var repeat_flag = false;
 	if(click_flag){
-
-		mainEvent(main_screen);
+		repeat_flag = mainEvent();
 	}
 	else{
 
 	}
+
+	//if repeatFlag is true, continue this routine
+	if(repeat_flag) clickSelector();
 	return;
 }
 ////////////////////////////////////////////////////////////////////////////////
 //メインのイベント処理
-function mainEvent(main_screen, sub_screen){
+function mainEvent(){
 
-	if((game_status['skip_mode']) && (read_flag[event_flag] == 0)) skip_mode = false;	//未読だった場合、スキップモードをオフに
-	
+	var repeat_flag　= false;
 	var str_tmp = transrateCommand(data[event_flag]);
 	var d_cmd= str_tmp.split(" ");		//スペース区切り
+
+	if((game_status['skip_mode']) && (read_flag[event_flag] == 0)) skip_mode = false;	//未読だった場合、スキップモードをオフに
 	read_flag[event_flag] = 1;			//既読フラグon
 
 	switch(d_cmd[0]){
@@ -167,7 +172,6 @@ function mainEvent(main_screen, sub_screen){
 		
 		case "wait":
 			wait_time(parseInt(d_cmd[TIME_NUM]));
-			click_flag=-1;
 		break;
 		
 		case "se":
@@ -181,16 +185,17 @@ function mainEvent(main_screen, sub_screen){
 		break;
 		
 		case "#":
-			repeat_flag　=　1;
+			repeat_flag　=　true;
 		break;
 		
 		case "//":
-			repeat_flag　=　1;
+			repeat_flag　=　true;
 		break;
 
 		//コマンドではないならメッセージ表示
 		default:
-			msg_wnd.msg = data[event_flag];
+			//msg_wnd.msg = data[event_flag];
+			msg_wnd.text(data[event_flag]);
 		break;
 	}
 	
@@ -199,7 +204,7 @@ function mainEvent(main_screen, sub_screen){
 	event_flag++;		//イベントフラグをインクリメント
 	
 	//if((skip_switch==1)&&(skip_mode==1)) repeat_flag=1;	//既読スキップモード時
-	return;
+	return repeat_flag;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -231,19 +236,39 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		enchant.Sprite.call(this, GAME_WIDTH, GAME_MAIN_HEIGHT);
 		this.x = 0;
 		this.y = 0;
+		this.age = 0;
 		this.opacity = 0;
+		this.wipe_mx = -32;
 		this.animationFlag = "none";
 		this.main_screen = main_screen;
+		//ワイプ用の画像保存バッファ
+		this.buffer = new Surface(GAME_WIDTH, GAME_MAIN_HEIGHT);
 		//アニメーション設定
 		this.addEventListener('enterframe', function (main_screen) {
-			//フェード
-			if(this.animationFlag == "fade"){
-				this.opacity += 0.1;
-				if(this.opacity >= 1.0) this.end();
-			}
-			else if(this.animationFlag == "cut"){
+			if(this.animationFlag == "cut"){
 				this.opacity = 1;
 				this.end();
+			}
+			else if(this.animationFlag == "wipe"){
+				for(var i = 0; i < 32; i++){
+					var aa = i * 20;			//x座標の開始位置を計算
+					var xx = i + this.wipe_mx;	//幅を計算
+					if(xx > 20) xx = -1;
+					//1～20ドットのサイズになる時だけコピー		
+					if(xx > 0)　this.buffer.draw(game.assets[game_status['bg']],aa,0,xx,GAME_MAIN_HEIGHT,
+								aa,0,xx,GAME_MAIN_HEIGHT);
+					
+				}
+				this.image = this.buffer;
+				this.wipe_mx++;			//全体のカウンターを+1
+
+				if(this.age >= 60){
+					this.end();
+				}
+			}
+			else if(this.animationFlag == "fade"){
+				this.opacity += 0.1;
+				if(this.opacity >= 1.0) this.end();
 			}
 		});
 		game.rootScene.addChild(this);
@@ -256,6 +281,7 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		clickSelector();
 	},
 	redraw: function (howto){
+		this.age = 0;
 		var suf = new Surface(GAME_WIDTH, GAME_MAIN_HEIGHT);
 		suf.draw(game.assets[game_status['bg']]);
 		
@@ -279,7 +305,13 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 			suf.draw(game.assets[game_status['char_right']], x, 0);
 		}
 		
-		this.image = suf;
+		if(howto == "wipe"){
+			//this.image = this.main_screen.image;
+			this.buffer = this.main_screen.image;
+		}
+		else{
+			this.image = suf;
+		}
 		this.animationFlag = howto;
 		
 	}
@@ -308,13 +340,21 @@ var MSGWINDOW = enchant.Class.create(enchant.Sprite, {
 		label.x = this.x + 5;
 		label.y = this.y + 12;
 		label.width = this.width - 60;
-		label.text = "aaaaaaaaa";
+		label.text = "";
 		game.rootScene.addChild(label);
 	},
-	txt: function (msg){
-		//this.label = msg;
+	text: function (msg){
+		
+		this.msg = replaceCaractor(msg);
 	}
 });
+/////////////////////////////////
+//Replace charactors
+function replaceCaractor(msg){
+	msg = msg.replace("】","】<br>");
+	msg = msg.replace(/＠/g,"<br>");
+	return msg;
+}
 
 //////////////////////////////////ストーリーデータをｊｓで運用するときのコード
 function dataLoad(){

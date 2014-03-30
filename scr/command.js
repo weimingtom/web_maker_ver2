@@ -1423,86 +1423,6 @@ function urlSearch(array_tmp, path){
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////キャラコマンド
-function charLoad(d_cmd){
-
-	var img_num;
-	var mode = "";
-
-	//var img_data=new Image();
-	//img_data.src=d_cmd[CHAR_PATH];
-	img_num = urlSearch(char_load_url, d_cmd[CHAR_PATH]);
-	
-	//	例外
-	if(!char_load_flag[img_num]){	//なかった場合
-		
-	}
-
-
-	
-
-	if((d_cmd[CHAR_POS] == "l") || (d_cmd[CHAR_POS] == "left") || (d_cmd[CHAR_POS] == "左")){
-		game_status['char_left'] = d_cmd[CHAR_PATH];
-	}
-	else if((d_cmd[CHAR_POS] == "c") || (d_cmd[CHAR_POS] == "center") || (d_cmd[CHAR_POS] == "中央")){
-		game_status['char_center'] = d_cmd[CHAR_PATH];
-	}
-	else if((d_cmd[CHAR_POS] == "r") || (d_cmd[CHAR_POS] == "right") || (d_cmd[CHAR_POS] == "右")){
-		game_status['char_right'] = d_cmd[CHAR_PATH];
-	}
-	else{
-		game_status['char_center'] = d_cmd[CHAR_PATH];
-	}
-		
-		
-	///////////////////////////////////////////
-
-	if((d_cmd['CHAR_HOWTO'] == 'c') || (d_cmd['CHAR_HOWTO'] == 'cut') || (d_cmd['CHAR_HOWTO'] == 'カット')){
-		mode = "cut";
-	}
-	else if((d_cmd['CHAR_HOWTO'] == 'f') || (d_cmd['CHAR_HOWTO'] == 'fade') || (d_cmd['CHAR_HOWTO'] == 'フェード')){
-		mode = "fade";
-	}
-	else{
-		mode = "fade";
-	}
-	////////////////////////////////////////////
-	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-	
-		
-	sub_screen.redraw(mode);
-	nextCharLoad();
-	return;
-}
-///////////////////////////////////
-//先読み
-function nextCharLoad(){
-	if(char_current_no < char_load_url.length){
-		game.load(char_load_url[char_current_no], function() {
-			//ロードが終わった時の処理
-			char_load_flag[char_current_no] = true;
-			char_current_no++;
-		});
-	}
-	return;
-}
-///////////////////////////////////
-//先読み
-function nextBgLoad(){
-	if(bg_current_no < bg_load_url.length){
-		game.load(bg_load_url[bg_current_no], function() {
-			//ロードが終わった時の処理
-			bg_load_flag[bg_current_no] = true;
-			bg_current_no++;
-		});
-	}
-	return;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////shakeアニメ
 function shake_init(){
@@ -1655,17 +1575,136 @@ function char_shake_anime(){
 
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////キャラコマンド
+function charLoad(d_cmd){
+
+	var img_num;
+	var mode = "";
+	click_flag = false;
+	//var img_data=new Image();
+	//img_data.src=d_cmd[CHAR_PATH];
+	img_num = urlSearch(char_load_url, d_cmd[CHAR_PATH]);
+	
+	//	例外
+	if(!char_load_flag[img_num]){	//なかった場合
+		
+	}
+
+
+	
+
+	if((d_cmd[CHAR_POS] == "l") || (d_cmd[CHAR_POS] == "left") || (d_cmd[CHAR_POS] == "左")){
+		game_status['char_left'] = d_cmd[CHAR_PATH];
+	}
+	else if((d_cmd[CHAR_POS] == "c") || (d_cmd[CHAR_POS] == "center") || (d_cmd[CHAR_POS] == "中央")){
+		game_status['char_center'] = d_cmd[CHAR_PATH];
+	}
+	else if((d_cmd[CHAR_POS] == "r") || (d_cmd[CHAR_POS] == "right") || (d_cmd[CHAR_POS] == "右")){
+		game_status['char_right'] = d_cmd[CHAR_PATH];
+	}
+	else{
+		game_status['char_center'] = d_cmd[CHAR_PATH];
+	}
+		
+		
+	///////////////////////////////////////////
+
+	if((d_cmd['CHAR_HOWTO'] == 'c') || (d_cmd['CHAR_HOWTO'] == 'cut') || (d_cmd['CHAR_HOWTO'] == 'カット')){
+		mode = "cut";
+	}
+	else if((d_cmd['CHAR_HOWTO'] == 'f') || (d_cmd['CHAR_HOWTO'] == 'fade') || (d_cmd['CHAR_HOWTO'] == 'フェード')){
+		mode = "fade";
+	}
+	else{
+		mode = "fade";
+	}
+	////////////////////////////////////////////
+	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
+	
+		
+	sub_screen.redraw(mode);
+	nextCharLoad();
+	return;
+}
+///////////////////////////////////
+//先読み
+function nextCharLoad(){
+	if(char_current_no < char_load_url.length){
+		//読み込まれていない場所なら
+		if(!char_load_flag[bg_current_no]){
+			game.load(char_load_url[char_current_no], function() {
+				//ロードが終わった時の処理
+				char_load_flag[char_current_no] = true;
+				char_current_no++;
+			});
+		}
+		else{
+			//もし読み込み場所がTrueならFalseの場所を探す
+			for(var i = 0; i < char_load_url.length; i++){
+				if(!char_load_flag[i]){
+					game.load(char_load_url[i], function() {
+						//ロードが終わった時の処理
+						char_load_flag[i] = true;
+						char_current_no = i + 1;
+					});
+					break;
+				}
+			}
+		}
+	}
+	return;
+}
+///////////////////////////////////
+//先読み
+function nextBgLoad(){
+	if(bg_current_no < bg_load_url.length){
+		//読み込まれていない場所なら
+		if(!bg_load_flag[bg_current_no]){
+			game.load(bg_load_url[bg_current_no], function() {
+				//ロードが終わった時の処理
+				bg_load_flag[bg_current_no] = true;
+				bg_current_no++;
+			});
+		}
+		else{
+			//もし読み込み場所がTrueならFalseの場所を探す
+			for(var i = 0; i < bg_load_url.length; i++){
+				if(!bg_load_flag[i]){
+					game.load(bg_load_url[i], function() {
+						//ロードが終わった時の処理
+						bg_load_flag[i] = true;
+						bg_current_no = i + 1;
+					});
+					break;
+				}
+			}
+		}
+		
+	}
+	return;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////ＢＧコマンド
 function bgLoad(d_cmd){
 	var mode = "";
+	click_flag = false;
 	charFlagReset("all");
 	
 	var img_num = urlSearch(bg_load_url, d_cmd[BG_PATH]);
 	
 	//	例外
 	if(!bg_load_flag[img_num]){	//なかった場合
-		
+		game.load(bg_load_url[img_num], function() {
+			//ロードが終わった時の処理
+			bg_load_flag[img_num] = true;
+			bg_current_no = img_num;
+			nextBgLoad();
+		});
 	}
 	
 	game_status['bg'] = d_cmd[BG_PATH];			//現在のURLを保持
@@ -1677,7 +1716,7 @@ function bgLoad(d_cmd){
 	}
 	else if((d_cmd[BG_HOWTO] == "w") || (d_cmd[BG_HOWTO] == "wipe") || (d_cmd[BG_HOWTO] == "ワイプ")){
 		//bgFadeSetting(buf_load_bg[img_num].src, FADE_SPEED);
-		mode = "fade";
+		mode = "wipe";
 	}
 	else if((d_cmd[BG_HOWTO] == "f") || (d_cmd[BG_HOWTO] == "fade") || (d_cmd[BG_HOWTO] == "フェード")){
 		//bgFadeSetting(buf_load_bg[img_num].src, FADE_SPEED);

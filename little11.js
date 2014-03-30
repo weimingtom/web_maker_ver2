@@ -1,6 +1,6 @@
-file_data=new Array('',
+file_data=new Array('■＃、最初',
 '',
-'■背景、フェード、data/bg/bg023.jpg',
+'■背景、フェード、data/bg/black.jpg',
 '',
 'シチュエーション：リトバスメンバーが共用スペースの大掃除をするようです。',
 '',
