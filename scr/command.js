@@ -443,89 +443,6 @@ function returnCancel(){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////画像先行ロード
-function init_img_load(){
-	var max;
-	
-	img_url_get();		//まずＵＲＬ取得
-	
-	////////BG先行読み込み
-	if(buf_bg_cnt<buf_pre_max){	//最大１０個読み込み
-		max = buf_bg_cnt;
-	}else{
-		max = buf_pre_max;
-	}
-	buf_bg_loaded = max;
-	
-	bg_init_load(max);
-	
-	
-	
-	////////キャラ先行読み込み
-	if(buf_img_cnt<buf_pre_max){	//最大１０個読み込み
-			max = buf_img_cnt;
-	}else{
-			max = buf_pre_max;
-	}
-	buf_img_loaded = max;
-	
-	img_init_load(max);
-	
-	////////SE先行読み込み
-	if(se_cnt<buf_pre_max){	//最大１０個読み込み
-			max=se_cnt;
-	}else{
-			max=buf_pre_max;
-	}
-	
-	se_init_load(max);
-	
-	
-	return;
-}
-
-////////////////////////////////////////////////キャラ先行ロード：引数：先行ロード枚数
-function img_init_load(load_cnt){
-	var i,j;
-	var r = 0;
-	var f = 0;
-	
-	for(i = event_flag;i<data.length;i++){
-		
-		
-		d_cmd = data[i].split(" ");		//スペース区切り
-		if(d_cmd[0] == "char"){
-			r = img_init_load_sub(d_cmd[CHAR_PATH]);
-			f = 1;
-		}else{
-			d_cmd = data[i].split("、");		//日本語区切り
-			if(d_cmd[0] == "■キャラ"){
-				r = img_init_load_sub(d_cmd[CHAR_PATH]);
-				f = 1;
-			}
-		}
-		
-		//未ロードだったときは読み込む
-		if((f == 1)&&(r != -1)){
-			buf_load_img[r].src = buf_img_url[r];
-			buf_img_load_f[r] = 1;		//読み込んだ画像のフラグは１に
-			buf_img_load_f[r].onLoad = imgInitOnload("char");		//ロード済みの場合のカウント
-			buf_load_img[r].onerror = function(){
-				var str_tmp="先行ロード失敗：キャラ画像ファイルがない場所があります。\n";
-				for(j=0;j<buf_load_img.length;j++){
-					str_tmp+=j+" : "+buf_load_img[j].src+"\n";
-				}
-				alert(str_tmp);
-			}
-			
-			load_cnt--;
-			if(load_cnt<=0) break;
-		}
-		
-		f=0;
-	}
-	
-	return;
-}
 /////////////////////////
 //Count onLoad
 function imgInitOnload(msg){
@@ -539,266 +456,6 @@ function imgInitOnload(msg){
 	}
 	return;
 }
-	
-////////////////////////キャラ先行ロードサブ
-//返り値：-1、そのパスが既にロードされている、n：されてない
-
-function img_init_load_sub(str_path){
-	var r=-1;
-	
-	for(var i=0;i<buf_img_cnt;i++){
-		if(buf_img_url[i]==str_path){
-			if(buf_img_load_f[i]!=1){
-				r=i;break;
-			}else{
-				/*
-				if(browser_type=="chrome"){		//if use Chrome, force load img.
-					buf_load_img[i].src=str_path;
-				}
-				*/
-				r=-1;break;
-			}
-		}
-	}
-	return r;
-}
-
-////////////////////////////////////////////////背景先行ロード：引数：先行ロード枚数
-function bg_init_load(load_cnt){
-	var i,j;
-	var r=0;
-	var f=0;
-	
-	for(i=event_flag;i<data.length;i++){
-		
-		
-		d_cmd=data[i].split(" ");		//スペース区切り
-		if((d_cmd[0]=="bg")||(d_cmd[0]=="title")){
-			r=bg_init_load_sub(d_cmd[BG_PATH]);
-			f=1;
-		}else{
-			d_cmd=data[i].split("、");		//日本語区切り
-			if((d_cmd[0]=="■背景")||(d_cmd[0]=="■タイトル")){
-				r=bg_init_load_sub(d_cmd[BG_PATH]);
-				f=1;
-			}
-		}
-		
-		//未ロードだったときは読み込む
-		if((f==1)&&(r!=-1)){
-			buf_load_bg[r].src=buf_bg_url[r];
-			buf_load_bg[r].onLoad = imgInitOnload("bg");		//ロード済みの場合のカウント
-			buf_load_bg[r].onerror=function(){
-				var str_tmp="先行ロード失敗：背景画像ファイルがない箇所があります。";
-				for(j=0;j<buf_load_bg.length;j++){
-					str_tmp+=j+" : "+buf_load_bg[j].src+"\n";
-				}
-				alert(str_tmp);
-			}
-			buf_bg_load_f[r]=1;		//読み込んだ画像のフラグは１に
-			load_cnt--;
-			if(load_cnt<=0) break;
-		}
-		
-		f=0;
-		
-	}
-	
-	return;
-}
-	
-////////////////////////背景先行ロードサブ
-//返り値：-1、そのパスが既にロードされている、n：されてない
-
-function bg_init_load_sub(str_path){
-	var r=-1;
-	
-	for(var i=0;i<buf_bg_cnt;i++){
-		if(buf_bg_url[i]==str_path){
-			if(buf_bg_load_f[i]!=1){
-				r=i;break;
-			}else{
-				if(browser_type=="chrome"){		//if use Chrome, force load img.
-					buf_load_bg[i].src=str_path;
-				}
-				r=-1;break;
-			}
-		}
-	}
-	return r;
-}
-
-////////////////////////////////////////////////背景先行ロード：引数：先行ロード枚数
-function se_init_load(load_cnt){
-var i;
-var r=0;
-var f=0;
-
-for(i=event_flag;i<data.length;i++){
-
-
-	d_cmd=data[i].split(" ");		//スペース区切り
-	if(d_cmd[0]=="se"){
-		r=se_init_load_sub(d_cmd[SE_PATH]);
-		f=1;
-	}else{
-		d_cmd=data[i].split("、");		//日本語区切り
-		if(d_cmd[0]=="■ＳＥ"){
-			r=se_init_load_sub(d_cmd[SE_PATH]);
-			f=1;
-		}
-	}
-
-	//未ロードだったときは読み込む
-	if((f==1)&&(r!=-1)){
-		se_src[r].src=se_url[r];
-		se_src[r].autoplay=false;
-		se_load_f[r]=1;		//読み込んだ画像のフラグは１に
-		load_cnt--;
-		if(load_cnt<=0) break;
-	}
-
-	f=0;
-
-	}
-
-	return;
-}
-
-////////////////////////背景先行ロードサブ
-//返り値：-1、そのパスが既にロードされている、n：されてない
-
-function se_init_load_sub(str_path){
-	var r=-1;
-
-	for(var i=0;i<se_cnt;i++){
-		if(se_url[i]==str_path){
-			if(se_load_f[i]!=1){
-				r=i;break;
-			}else{
-				r=-1;break;
-			}
-		}
-	}
-	return r;
-}
-
-
-////////////////////////////////////スクリプト内のＵＲＬ取得
-function img_url_get(){
-	var i,j;
-	var int_f=0;
-	
-	for(i=0;i<data.length;i++){
-		for(j=0;j<5;j++){
-			d_cmd[j]="";
-		}
-		
-		////////////////////////////////////////////////
-		d_cmd=data[i].split(" ");		//スペース区切り
-		switch(d_cmd[0]){
-			case "bg":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(buf_bg_url[j]==d_cmd[BG_PATH]){int_f=1;}		//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					buf_bg_url[buf_bg_cnt]=d_cmd[BG_PATH];
-					buf_bg_cnt++;
-				}
-				
-			break;
-			
-			case "title":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(buf_bg_url[j]==d_cmd[BG_PATH]){int_f=1;}		//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					buf_bg_url[buf_bg_cnt]=d_cmd[BG_PATH];
-					buf_bg_cnt++;
-				}
-				
-			break;
-	
-			case "char":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(buf_img_url[j]==d_cmd[CHAR_PATH]){int_f=1;}	//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					buf_img_url[buf_img_cnt]=d_cmd[CHAR_PATH];
-					buf_img_cnt++;
-				}
-			break;
-			
-			case "se":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(se_url[j]==d_cmd[SE_PATH]){int_f=1;}	//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					se_url[se_cnt]=d_cmd[SE_PATH];
-					se_cnt++;
-				}
-				
-			break;
-		}
-		////////////////////////////////////////////////
-		d_cmd=data[i].split("、");		//日本語区切り
-		switch(d_cmd[0]){
-			case "■背景":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(buf_bg_url[j]==d_cmd[BG_PATH]){int_f=1;}	//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					buf_bg_url[buf_bg_cnt]=d_cmd[BG_PATH];
-					buf_bg_cnt++;
-				}
-			break;
-			case "■タイトル":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(buf_bg_url[j]==d_cmd[BG_PATH]){int_f=1;}	//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					buf_bg_url[buf_bg_cnt]=d_cmd[BG_PATH];
-					buf_bg_cnt++;
-				}
-			break;
-	
-			case "■キャラ":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(buf_img_url[j]==d_cmd[CHAR_PATH]){int_f=1;}	//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					buf_img_url[buf_img_cnt]=d_cmd[CHAR_PATH];
-					buf_img_cnt++;
-				}
-			break;
-			
-			case "■ＳＥ":
-				int_f=0;
-				for(j=0;j<i;j++){
-					if(se_url[j]==d_cmd[SE_PATH]){int_f=1;}	//データが既にあったらダブらせない
-				}
-				if(int_f==0){
-					se_url[se_cnt]=d_cmd[SE_PATH];
-					se_cnt++;
-				}
-				
-			break;
-		}
-	}
-	return;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 
 
@@ -1164,44 +821,52 @@ function user_L_to_N(c){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////gotoコマンド
-function goto_cmd(){
-	
+function goto_cmd(d_cmd){
 	var ok_f=0;
-	var goto_flag=d_cmd[1];		//探す旗を退避
+	var no = 0;
+	var goto_flag = d_cmd[1];		//探す旗を退避
+	ok_f = goto_return(goto_flag);
 	
-	ok_f=goto_return(goto_flag);
-	
+	//直近の画像を検索し、そこから１０枚先行読み込み
+	no = SearchNearImgUrl(event_flag, "char");
+	if(no != 0){
+		preloadImg(no, "char", 10);
+	}
+	no = SearchNearImgUrl(event_flag, "bg");
+	if(no != 0){
+		preloadImg(no, "bg", 10);
+	}
+	no = SearchNearImgUrl(event_flag, "se");
+	if(no != 0){
+		preloadImg(no, "se", 10);
+	}
 	return;
 }
 
 ///////////////////////////////////////////goto実体
 function goto_return(goto_f){
-	var ok_f=0;
-	for(var i=0;i<data.length;i++){
+	var ok_f = 0;
+	for(var i = 0; i < data.length; i++){
 		
-		d_cmd=data[i].split(" ");		//スペース区切り
-		if((d_cmd[0]=="#")&&(goto_f==d_cmd[1])){
-			event_flag=i;				//進行フラグ書き換え
-			repeat_flag=1;
-			ok_f=1;
+		var d_cmd = data[i].split(" ");		//スペース区切り
+		if((d_cmd[0] == "#") && (goto_f == d_cmd[1])){
+			event_flag = i;				//進行フラグ書き換え
+			ok_f = 1;
 			break;
 		}else{
-			d_cmd=data[i].split("、");		//句読点区切り
-			if((d_cmd[0]=="■＃")&&(goto_f==d_cmd[1])){
-				event_flag=i;				//進行フラグ書き換え
-				repeat_flag=1;
-				ok_f=1;
+			d_cmd = data[i].split("、");		//句読点区切り
+			if((d_cmd[0] == "■＃") && (goto_f == d_cmd[1])){
+				event_flag = i;				//進行フラグ書き換え
+				ok_f = 1;
 				break;
 			}	
 		}
 	}
 	
-	if(ok_f==0){		//エラーのとき
+	if(ok_f == 0){		//エラーのとき
 		var s;
-		s="ハタ："+goto_f+"\nハタが見つかりません";
+		s = "ハタ：" + goto_f + "\nハタが見つかりません";
 		alert(s);
-	}else{
-		init_img_load();	//先行ロード
 	}
 	
 	return ok_f;
@@ -1262,72 +927,57 @@ function se_url_search(){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////BGMコマンド
-function bgm_start(){
-	var p="";
+function bgmStart(d_cmd){
 	var s=new Array();
-	
-	
-	s=d_cmd[BGM_PATH].split(".");	//拡張子前で切る。
-	
-	
+	s = d_cmd[BGM_PATH].split(".");	//拡張子前で切る。
 		
-		if(sound_f==1){
-			//document.getElementById("bgm").load();
-			document.getElementById("bgm").autoplay=true;
+	if(game_status['sound_mode']){
+		document.getElementById("bgm").autoplay = true;
+	}
+	else{
+		return;
+	}
+	document.getElementById("bgm").volume = bgm_volume;
+	document.getElementById("bgm").loop = true;
+
+	var canPlayOgg = ("" != document.getElementById("bgm").canPlayType("audio/ogg"));
+	var canPlayMp3 = ("" != document.getElementById("bgm").canPlayType("audio/mpeg"));
+
+	switch(s[1]){
+	case "ogg" :
+		if(canPlayOgg){		// oggをサポートしている
+			document.getElementById("bgm").src = d_cmd[BGM_PATH];
+			game_status['bgm'] = d_cmd[BGM_PATH];
 		}
-		document.getElementById("bgm").volume=bgm_volume;
-		document.getElementById("bgm").loop=true;
+		else{				// mp3をサポートしている
+			var p = s[0] + ".mp3";
+			document.getElementById("bgm").src = p;
+			game_status['bgm'] = p;
+		}
+	break;
 	
-		var canPlayOgg = ("" != document.getElementById("bgm").canPlayType("audio/ogg"));
-		var canPlayMp3 = ("" != document.getElementById("bgm").canPlayType("audio/mpeg"));
-    
-		switch(s[1]){
-		case "ogg" :
-    		if(canPlayOgg){		// oggをサポートしている
-    			document.getElementById("bgm").src=d_cmd[BGM_PATH];
-    			current_bgm_url=d_cmd[BGM_PATH];
-    		}else{				// mp3をサポートしている
-    			p=""+s[0]+".mp3";
-    			document.getElementById("bgm").src=p;
-    			current_bgm_url=p;
-    		}
-    	break;
-    	
-    	case "mp3" :
-    		if(canPlayMp3){		// mp3をサポートしている
-    			document.getElementById("bgm").src=d_cmd[BGM_PATH];
-    			current_bgm_url=d_cmd[BGM_PATH];
-    		}else{				// oggをサポートしている
-    			p=""+s[0]+".ogg";
-    			document.getElementById("bgm").src=p;
-    			current_bgm_url=p;
-    		}
-    	break;
+	case "mp3" :
+		if(canPlayMp3){		// mp3をサポートしている
+			document.getElementById("bgm").src = d_cmd[BGM_PATH];
+			game_status['bgm'] = d_cmd[BGM_PATH];
+		}else{				// oggをサポートしている
+			var p = s[0] + ".ogg";
+			document.getElementById("bgm").src=p;
+			game_status['bgm'] = p;
 		}
+	break;
+	}
     
-		
-	//bgm.autoplay=true;
-	//bgm.src=d_cmd[BGM_PATH];
-	repeat_flag=1;
 	return;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
-
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////再生を停止
-function bgm_stop(){
+function bgmStop(d_cmd){
 	document.getElementById("bgm").pause();
-	repeat_flag=1;
+	return;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1588,7 +1238,13 @@ function charLoad(d_cmd){
 	
 	//	例外
 	if(!char_load_flag[img_num]){	//なかった場合
-		
+		game.load(char_load_url[img_num], function() {
+			//ロードが終わった時の処理
+			char_load_flag[img_num] = true;
+			char_current_no = img_num;
+			nextCharLoad();
+			sub_screen.redraw("cut");
+		});
 	}
 
 
@@ -1625,63 +1281,6 @@ function charLoad(d_cmd){
 		
 	sub_screen.redraw(mode);
 	nextCharLoad();
-	return;
-}
-///////////////////////////////////
-//先読み
-function nextCharLoad(){
-	if(char_current_no < char_load_url.length){
-		//読み込まれていない場所なら
-		if(!char_load_flag[bg_current_no]){
-			game.load(char_load_url[char_current_no], function() {
-				//ロードが終わった時の処理
-				char_load_flag[char_current_no] = true;
-				char_current_no++;
-			});
-		}
-		else{
-			//もし読み込み場所がTrueならFalseの場所を探す
-			for(var i = 0; i < char_load_url.length; i++){
-				if(!char_load_flag[i]){
-					game.load(char_load_url[i], function() {
-						//ロードが終わった時の処理
-						char_load_flag[i] = true;
-						char_current_no = i + 1;
-					});
-					break;
-				}
-			}
-		}
-	}
-	return;
-}
-///////////////////////////////////
-//先読み
-function nextBgLoad(){
-	if(bg_current_no < bg_load_url.length){
-		//読み込まれていない場所なら
-		if(!bg_load_flag[bg_current_no]){
-			game.load(bg_load_url[bg_current_no], function() {
-				//ロードが終わった時の処理
-				bg_load_flag[bg_current_no] = true;
-				bg_current_no++;
-			});
-		}
-		else{
-			//もし読み込み場所がTrueならFalseの場所を探す
-			for(var i = 0; i < bg_load_url.length; i++){
-				if(!bg_load_flag[i]){
-					game.load(bg_load_url[i], function() {
-						//ロードが終わった時の処理
-						bg_load_flag[i] = true;
-						bg_current_no = i + 1;
-					});
-					break;
-				}
-			}
-		}
-		
-	}
 	return;
 }
 
@@ -1732,53 +1331,6 @@ function bgLoad(d_cmd){
 	nextBgLoad();
 	return;
 }
-
-//////////////////////////////////////////////
-//ワイプセッティング
-function wipeSetting(src, speed){
-	if(skip_mode!=1){
-		wipe_mx=-32;
-		wipe_cnt=0;
-		wipe_anime_flag=1;
-		repeat_flag=0;
-		bgWipe(src, speed)
-	}else{
-		bgFade(0);
-		repeat_flag=1;
-	}
-
-}
-////////////////////////////////////////////
-//BGワイプ
-function bgWipe(src, speed_w){
-	var setImg = '#bgViewer';
-	var delay = 200;
-	speed_w = 1000;
-
-	$(setImg).cycle({ 
-	 fx: 'scrollLeft',
-   	 timeout: 0, 
-   	 speed:   1000, 
-	});
-
-	var t = (bg_change_flag == 0) ? bg_change_flag = 1 : bg_change_flag = 0;
-	var tag = "bgSrc" + t;
-	document.getElementById(tag).src = src;
-	//$(setImg + ' :first-child').animate({opacity:'0'},speed_w + delay).next('img').animate({opacity:'1'},speed_w).end().appendTo(setImg);
-	$(setImg).cycle(t);	
-
-
-	//表示待ち
-	if(speed_w > 0){
-		wait_time(speed_w + delay);
-	}
-	return;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 
@@ -1861,4 +1413,171 @@ function title_load(){
 		bg_init_load(2);	//先読み込み
 	return;
 }
+
+////////////////////////////////////////////////////
+//現在位置から一番近い画像ロードの位置を取得
+function SearchNearImgUrl(current_no, mode){
+	var check_data = new Array();
+	var path = "";
+	var int_f = 0;
+	if(mode == "bg"){
+		check_data = bg_load_url;
+		path = BG_PATH;
+	}
+	else if(mode == "char"){
+		check_data = char_load_url;
+		path = CHAR_PATH;
+	}
+	else if(mode == "se"){
+		check_data = se_load_url;
+		path = SE_PATH;
+	}
+	for(var i = current_no; i < data.length; i++){
+		var str_tmp = transrateCommand(data[i]);
+		var d_cmd= str_tmp.split(" ");		//スペース区切り
+
+		if(d_cmd[0] == mode){
+			for(var j = 0; j < check_data.length; j++){
+				if(check_data[j] == d_cmd[path]){
+					int_f = j;
+					break;
+				} 
+			}
+			break;
+		}
+	}
+	return int_f;
+}
+
+//////////////////////////////////////////////
+//現在の位置から指定枚画像を読み込む
+function preloadImg(no, mode, max){
+	if(mode == "char"){
+		//MAX回の先行読み込み
+		char_current_no = no;
+		for(var i = no; i < no + max; i++){
+			if(i < char_load_url.length){
+				//読込されていない場合、読み込む
+				if(!char_load_flag[i]){
+					game.load(char_load_url[i], function() {
+						//ロードが終わった時の処理
+						char_load_flag[i] = true;
+					});
+				}
+				char_current_no++;
+			}
+			else{
+				//配列以上になったらブレイク
+				break;
+			}
+		}
+
+	}
+
+	////////////////////////////////
+	if(mode == "bg"){
+		//MAX回の先行読み込み
+		bg_current_no = no;
+		for(var i = no; i < no + max; i++){
+			if(i < bg_load_url.length){
+				//読込されていない場合、読み込む
+				if(!bg_load_flag[i]){
+					game.load(bg_load_url[i], function() {
+						//ロードが終わった時の処理
+						bg_load_flag[i] = true;
+					});
+				}
+				bg_current_no++;
+			}
+			else{
+				//配列以上になったらブレイク
+				break;
+			}
+		}
+
+	}
+
+	////////////////////////////////
+	if(mode == "se"){
+		//MAX回の先行読み込み
+		se_current_no = no;
+		for(var i = no; i < no + max; i++){
+			if(i < se_load_url.length){
+				//読込されていない場合、読み込む
+				if(!se_load_flag[i]){
+					game.load(se_load_url[i], function() {
+						//ロードが終わった時の処理
+						se_load_flag[i] = true;
+					});
+				}
+				se_current_no++;
+			}
+			else{
+				//配列以上になったらブレイク
+				break;
+			}
+		}
+
+	}
+
+	return;
+}
+///////////////////////////////////
+//先読み
+function nextCharLoad(){
+	if(char_current_no < char_load_url.length){
+		//読み込まれていない場所なら
+		if(!char_load_flag[char_current_no]){
+			game.load(char_load_url[char_current_no], function() {
+				//ロードが終わった時の処理
+				char_load_flag[char_current_no] = true;
+				char_current_no++;
+			});
+		}
+		else{
+			//もし読み込み場所がTrueならFalseの場所を探す
+			for(var i = 0; i < char_load_url.length; i++){
+				if(!char_load_flag[i]){
+					game.load(char_load_url[i], function() {
+						//ロードが終わった時の処理
+						char_load_flag[i] = true;
+						char_current_no = i + 1;
+					});
+					break;
+				}
+			}
+		}
+	}
+	return;
+}
+///////////////////////////////////
+//先読み
+function nextBgLoad(){
+	if(bg_current_no < bg_load_url.length){
+		//読み込まれていない場所なら
+		if(!bg_load_flag[bg_current_no]){
+			game.load(bg_load_url[bg_current_no], function() {
+				//ロードが終わった時の処理
+				bg_load_flag[bg_current_no] = true;
+				bg_current_no++;
+			});
+		}
+		else{
+			//もし読み込み場所がTrueならFalseの場所を探す
+			for(var i = 0; i < bg_load_url.length; i++){
+				if(!bg_load_flag[i]){
+					game.load(bg_load_url[i], function() {
+						//ロードが終わった時の処理
+						bg_load_flag[i] = true;
+						bg_current_no = i + 1;
+					});
+					break;
+				}
+			}
+		}
+		
+	}
+	return;
+}
+
 

@@ -43,6 +43,7 @@ var game_status = {
 	char_right : "",
 	bg : "",
 	bgm : "",
+	sound_mode : true,
 	effect_mode : true,
 	skip_mode : false
 };
@@ -124,34 +125,33 @@ function mainEvent(){
 
 	switch(d_cmd[0]){
 		case "bg":
-			//char_cut_anime();
 			bgLoad(d_cmd);
 		break;
 		case "title":
-			//char_cut_anime();
 			title_load(d_cmd);
 		break;
 	
 		case "char":
-			//char_cut_anime();
 			charLoad(d_cmd);
 		break;
 		
 		case "rm":
-			//char_cut_anime();
 			charRm(d_cmd);
 		break;
 		
 		case "music":
-			bgm_start(d_cmd);
+			bgmStart(d_cmd);
+			repeat_flag　=　true;
 		break;
 		
 		case "musicstop":
-			bgm_stop(d_cmd);
+			bgmStop(d_cmd);
+			repeat_flag　=　true;
 		break;
 		
 		case "goto":
 			goto_cmd(d_cmd);
+			repeat_flag　=　true;
 		break;
 		
 		case "flagset":
@@ -276,6 +276,7 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 	end: function(){
 		this.main_screen.redraw(this.image);
 		this.opacity = 0;
+		this.wipe_mx = -32;
 		click_flag = true;
 		this.animationFlag = "none";
 		clickSelector();
