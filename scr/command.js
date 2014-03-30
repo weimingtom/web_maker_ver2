@@ -574,44 +574,28 @@ function hiddenSelectArea(area_name){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////wait
-function t_wait(){
-	click_flag = -1;
-	timer_cnt--;
-	if(timer_cnt == 0){
-		timer_flag = 0;
-		click_flag = 0;
-
-		//ゲームスタート時のウェイトだったら(タイムアウト時)
-		if(game_start_flag == 1){
-			game_start_flag = 0;
-			
-			footer_redraw();	//下のアイコンを描画
-		}
-	}
-	else{
-		//ゲームスタート時
-		if(game_start_flag == 1){
-			//先行ロードが終了していたら
-			if((buf_img_loaded == buf_img_loaded_cnt) && (buf_bg_loaded == buf_bg_loaded_cnt)){
-				timer_flag = 0;
-				click_flag = 0;
-				timer_cnt = 0;
-				game_start_flag = 0;
-			
-				footer_redraw();	//下のアイコンを描画
-			}
-		}
-	}
+/////////////////////////////////////////////////////waitコマンド登録
+function waitTime(cnt){
+	timer_cnt = parseInt(cnt / DEFAULT_FPS);
+	//char_cut_anime();
 	return;
 }
-
-/////////////////////////////////////////////////////waitコマンド登録
-function wait_time(cnt){
-	timer_cnt=parseInt(cnt / FPS);
-	//char_cut_anime();
-	timer_flag = 1;
-return;
+function t_wait(){
+	var f = false;
+	click_flag = false;
+	timer_cnt--;
+	if(timer_cnt <= 0){
+		timer_cnt = 0;
+		click_flag = true;
+		f = true;
+	}
+	else{
+		
+	}
+	return f;
 }
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -627,23 +611,23 @@ return;
 
 //////////////////////////////////////////////////////////////////////
 //ifコマンド
-function if_cmd(){
+function ifCmd(d_cmd){
 	var if_flag=0;
 	var n,h_n;
 	
 	//被数が変数だった場合
 	if(d_cmd[VAR_C_NUM].match(/[ABCDEFGHIJ]/)){
-		h_n=user_L_to_N(d_cmd[VAR_C_NUM]);
-		n=user_var[h_n];
+		h_n = user_L_to_N(d_cmd[VAR_C_NUM]);
+		n = user_var[h_n];
 	}else{
-		n=parseInt(d_cmd[VAR_C_NUM]);
+		n = parseInt(d_cmd[VAR_C_NUM]);
 	}
 	
-	var l=user_L_to_N(d_cmd[VAR_LETTER]);
+	var l = user_L_to_N(d_cmd[VAR_LETTER]);
 	
-	if(l==-1){	//変数が間違っている場合。
+	if(l == -1){	//変数が間違っている場合。
 		var s;
-		s=event_flag+"行目--変数："+d_cmd[VAR_LETTER]+"\n変数が正しくありません。変数はAからJまでです。";
+		s = event_flag+"行目--変数："+d_cmd[VAR_LETTER]+"\n変数が正しくありません。変数はAからJまでです。";
 		alert(s);
 		return;
 	}
@@ -670,14 +654,13 @@ function if_cmd(){
 	}
 	
 	//条件に合っていたら
-	if(if_flag==1){
-		var goto_flag=d_cmd[VAR_IF_HATA];		//探す旗を退避
-		var ok_f=goto_return(goto_flag);		//ジャンプ
+	if(if_flag == 1){
+		var goto_flag = d_cmd[VAR_IF_HATA];		//探す旗を退避
+		var ok_f = goto_return(goto_flag);		//ジャンプ
 		
 		return;
 	}
 	
-	repeat_flag=1;
 	return;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -690,46 +673,45 @@ function if_cmd(){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////フラグ計算
-function flag_cal(){
+function flagCal(d_cmd){
 	var n,h_n;
 	
 	//被数が変数だった場合
 	if(d_cmd[VAR_C_NUM].match(/[ABCDEFGHIJ]/)){
-		h_n=user_L_to_N(d_cmd[VAR_C_NUM]);
-		n=user_var[h_n];
+		h_n = user_L_to_N(d_cmd[VAR_C_NUM]);
+		n = user_var[h_n];
 	}else{
-		n=parseInt(d_cmd[VAR_C_NUM]);
+		n = parseInt(d_cmd[VAR_C_NUM]);
 	}
 	
-	var l=user_L_to_N(d_cmd[VAR_LETTER]);
+	var l = user_L_to_N(d_cmd[VAR_LETTER]);
 	
-	if(l==-1){	//変数が間違っている場合。
+	if(l == -1){	//変数が間違っている場合。
 		var s;
-		s=event_flag+"行目--変数："+d_cmd[VAR_LETTER]+"\n変数が正しくありません。変数はAからJまでです。";
+		s = event_flag+"行目--変数："+d_cmd[VAR_LETTER]+"\n変数が正しくありません。変数はAからJまでです。";
 		alert(s);
 		return;
 	}
 	
 	switch(d_cmd[VAR_C_F]){
 		case "+":
-			user_var[l]=user_var[l]+n;
+			user_var[l] = user_var[l]+n;
 		break;
 		case "-":
-			user_var[l]=user_var[l]-n;
+			user_var[l] = user_var[l]-n;
 		break;
 		case "*":
-			user_var[l]=user_var[l]*n;
+			user_var[l] = user_var[l]*n;
 		break;
 		case "/":
-			user_var[l]=user_var[l]/n;
+			user_var[l] = user_var[l]/n;
 			parseInt(user_var[l]);
 		break;
 		case "%":
-			user_var[l]=user_var[l]%n;
+			user_var[l] = user_var[l]%n;
 		break;
 	
 	}
-	repeat_flag=1;
 	return;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -739,28 +721,27 @@ function flag_cal(){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////ユーザ変数に値代入
-function flag_set(){
+function flagSet(d_cmd){
 	var n,h_n;
 	
 	//被数が変数だった場合
 	if(d_cmd[VAR_NUM].match(/[ABCDEFGHIJ]/)){
-		h_n=user_L_to_N(d_cmd[VAR_NUM]);
-		n=user_var[h_n];
+		h_n = user_L_to_N(d_cmd[VAR_NUM]);
+		n = user_var[h_n];
 	}else{
-		n=parseInt(d_cmd[VAR_NUM]);
+		n = parseInt(d_cmd[VAR_NUM]);
 	}
 	
-	var l=user_L_to_N(d_cmd[VAR_LETTER]);
+	var l = user_L_to_N(d_cmd[VAR_LETTER]);
 	
-	if(l==-1){	//変数が間違っている場合。
+	if(l == -1){	//変数が間違っている場合。
 		var s;
-		s=event_flag+"行目--変数："+d_cmd[VAR_LETTER]+"\n変数が正しくありません。変数はAからJまでです。";
+		s = event_flag+"行目--変数："+d_cmd[VAR_LETTER]+"\n変数が正しくありません。変数はAからJまでです。";
 		alert(s);
 		return;
 	}
 	
-	user_var[l]=n;
-	repeat_flag=1;
+	user_var[l] = n;
 	return;
 }
 
@@ -821,31 +802,20 @@ function user_L_to_N(c){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////gotoコマンド
-function goto_cmd(d_cmd){
+function gotoCmd(d_cmd){
 	var ok_f=0;
-	var no = 0;
+	
 	var goto_flag = d_cmd[1];		//探す旗を退避
 	ok_f = goto_return(goto_flag);
 	
-	//直近の画像を検索し、そこから１０枚先行読み込み
-	no = SearchNearImgUrl(event_flag, "char");
-	if(no != 0){
-		preloadImg(no, "char", 10);
-	}
-	no = SearchNearImgUrl(event_flag, "bg");
-	if(no != 0){
-		preloadImg(no, "bg", 10);
-	}
-	no = SearchNearImgUrl(event_flag, "se");
-	if(no != 0){
-		preloadImg(no, "se", 10);
-	}
+	
 	return;
 }
 
 ///////////////////////////////////////////goto実体
 function goto_return(goto_f){
 	var ok_f = 0;
+	var no = 0;
 	for(var i = 0; i < data.length; i++){
 		
 		var d_cmd = data[i].split(" ");		//スペース区切り
@@ -868,6 +838,21 @@ function goto_return(goto_f){
 		s = "ハタ：" + goto_f + "\nハタが見つかりません";
 		alert(s);
 	}
+	else{
+		//直近の画像を検索し、そこから１０枚先行読み込み
+		no = SearchNearImgUrl(event_flag, "char");
+		if(no != 0){
+			preloadImg(no, "char", PRELOAD_MAX);
+		}
+		no = SearchNearImgUrl(event_flag, "bg");
+		if(no != 0){
+			preloadImg(no, "bg", PRELOAD_MAX);
+		}
+		no = SearchNearImgUrl(event_flag, "se");
+		if(no != 0){
+			preloadImg(no, "se", PRELOAD_MAX);
+		}
+	}
 	
 	return ok_f;
 }
@@ -884,45 +869,16 @@ function goto_return(goto_f){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////SEプレイ
-function se_play(){
+function sePlay(d_cmd){
 	var se_num;
+	if(!game_status['sound_mode']) return;
 
-	se_num=se_url_search();
-	//	例外
-	if(se_num==-1){	//なかった場合
-		alert("効果音の読み込みに失敗しました。");
-	}
-
-	se_src[se_num].loop=false;
-	se_src[se_num].volume=se_volume;
+	//se_src[se_num].loop=false;
+	//se_src[se_num].volume=se_volume;
+	game.assets[d_cmd[SE_PATH]].play();
 	
-	if(sound_f==1) se_src[se_num].play();
-	
-	repeat_flag=1;
 	return;
 }
-
-/////////////////////////////////////////////////////ＳＥのＵＲＬ検索
-function se_url_search(){
-	var i;
-	var s_f=-1;
-
-	for(i=0;i<se_cnt;i++){
-		if(d_cmd[SE_PATH]==se_url[i]){
-			s_f=i;
-			break;
-		}
-	}
-
-	return s_f;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1075,9 +1031,32 @@ function urlSearch(array_tmp, path){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////shakeアニメ
-function shake_init(){
-	repeat_flag = 0;
-	switch(d_cmd[1]){
+function shake_init(d_cmd, mode){
+	click_flag = false;
+	var shake_time = "";
+	var shake_pos = "";
+	var shake_flag = 0;
+
+	if(mode == "char"){
+		shake_time = d_cmd[2];
+		if((d_cmd[1] == "left") || (d_cmd[1] == "左")){
+			shake_pos ="left";
+		}
+		else if((d_cmd[1] == "center") || (d_cmd[1] == "中央")){
+			shake_pos ="center";
+		}
+		else if((d_cmd[1] == "right") || (d_cmd[1] == "右")){
+			shake_pos ="right";
+		}
+
+	}
+	else {
+		shake_time = d_cmd[1];
+		shake_pos = "bg";
+	}
+
+
+	switch(shake_time){
 	case "一瞬":
 		shake_flag=10;
 	break;
@@ -1102,128 +1081,10 @@ function shake_init(){
 	
 	}
 	
+	sub_screen.setShake(shake_pos, shake_flag);
 	
 	return;
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-function shake_anime(){
-	var r_x = Math.floor(Math.random() * 100) - 50;	//x座標増減分-50 ~ +50
-	var r_y = Math.floor(Math.random() * 100) - 50;	//x座標増減分-50 ~ +50
-	
-	var str_tmp = "bgSrc" + bg_change_flag;
-	document.getElementById(str_tmp).style.top = r_y + "px";
-	document.getElementById(str_tmp).style.left = r_x + "px";
-	shake_flag--;
-	
-	
-	return;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////キャラshakeアニメ
-function char_shake_init(){
-	click_flag=-1;
-	
-	switch(d_cmd[1]){		//位置代入
-	case "左":
-		char_shake_position="left";
-	break;
-	case "中央":
-		char_shake_position="center";
-	break;
-	case "右":
-		char_shake_position="right";
-	break;
-	case "left":
-		char_shake_position="left";
-	break;
-	case "center":
-		char_shake_position="center";
-	break;
-	case "right":
-		char_shake_position="right";
-	break;
-	default :
-		char_shake_position="center";
-	break;
-	
-	}
-	
-	switch(d_cmd[2]){		//揺れるフレーム数代入
-	case "一瞬":
-		char_shake_flag=5;
-	break;
-	case "普通":
-		char_shake_flag=10;
-	break;
-	case "長い":
-		char_shake_flag=20;
-	break;
-	case "instant":
-		char_shake_flag=5;
-	break;
-	case "nomal":
-		char_shake_flag=10;
-	break;
-	case "long":
-		char_shake_flag=20;
-	break;
-	default :
-		char_shake_flag=5;
-	break;
-	
-	}
-	
-	
-	return;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-function char_shake_anime(){
-	var r_x=Math.floor(Math.random()*100)-50;	//x座標増減分-50 ~ +50
-	
-	
-	
-	switch(char_shake_position){
-	case "left":
-		
-			
-		    var tag = "charLeftSrc" + char_change_flag["#charLeftViewer"];
-		    document.getElementById(tag).style.left = r_x;
-
-		
-	break;
-	case "center":
-		
-			var tag = "charCenterSrc" + char_change_flag["#charCenterViewer"];
-			w = document.getElementById(tag).width;
-		    document.getElementById(tag).style.left = (((GAME_WIDTH - w) / 2) + r_x) + "px";
-
-		
-	break;
-	
-	case "right":
-	
-		
-			
-			var tag = "charRightSrc" + char_change_flag["#charRightViewer"];
-			w = document.getElementById(tag).width;
-		    document.getElementById(tag).style.left = ((GAME_WIDTH - w) + r_x) + "px";
-		
-		
-	break;
-	
-	
-	}
-	
-	char_shake_flag--;
-	
-	
-	return;
-}
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////キャラコマンド
@@ -1277,10 +1138,10 @@ function charLoad(d_cmd){
 	}
 	////////////////////////////////////////////
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-	
+	nextCharLoad();
 		
 	sub_screen.redraw(mode);
-	nextCharLoad();
+	
 	return;
 }
 
@@ -1326,9 +1187,9 @@ function bgLoad(d_cmd){
 		mode = "fade";
 	}
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-
-	sub_screen.redraw(mode);
 	nextBgLoad();
+	sub_screen.redraw(mode);
+	
 	return;
 }
 
@@ -1528,20 +1389,24 @@ function nextCharLoad(){
 	if(char_current_no < char_load_url.length){
 		//読み込まれていない場所なら
 		if(!char_load_flag[char_current_no]){
+			click_flag = false;
 			game.load(char_load_url[char_current_no], function() {
 				//ロードが終わった時の処理
 				char_load_flag[char_current_no] = true;
 				char_current_no++;
+				click_flag = true;
 			});
 		}
 		else{
 			//もし読み込み場所がTrueならFalseの場所を探す
 			for(var i = 0; i < char_load_url.length; i++){
 				if(!char_load_flag[i]){
+					click_flag = false;
 					game.load(char_load_url[i], function() {
 						//ロードが終わった時の処理
 						char_load_flag[i] = true;
 						char_current_no = i + 1;
+						click_flag = true;
 					});
 					break;
 				}
@@ -1556,20 +1421,24 @@ function nextBgLoad(){
 	if(bg_current_no < bg_load_url.length){
 		//読み込まれていない場所なら
 		if(!bg_load_flag[bg_current_no]){
+			click_flag = false;
 			game.load(bg_load_url[bg_current_no], function() {
 				//ロードが終わった時の処理
 				bg_load_flag[bg_current_no] = true;
 				bg_current_no++;
+				click_flag = true;
 			});
 		}
 		else{
 			//もし読み込み場所がTrueならFalseの場所を探す
 			for(var i = 0; i < bg_load_url.length; i++){
 				if(!bg_load_flag[i]){
+					click_flag = false;
 					game.load(bg_load_url[i], function() {
 						//ロードが終わった時の処理
 						bg_load_flag[i] = true;
 						bg_current_no = i + 1;
+						click_flag = true;
 					});
 					break;
 				}

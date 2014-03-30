@@ -1,6 +1,6 @@
 enchant();
 
-var DEBUG_MODE = 1;			//デバッグモード
+var DEBUG_MODE = true;			//デバッグモード
 
 var GAME_WIDTH =	640;		//Game width
 var GAME_HEIGHT =	800;		//Game height
@@ -8,7 +8,7 @@ var GAME_MAIN_HEIGHT = 600;		//Game screen height
 
 var game;						//game object
 var DEFAULT_FPS = 30;			//Frame rate
-var PRELOAD_MAX = 10;			//Max number of preload.
+var PRELOAD_MAX = 20;			//Max number of preload.
 
 var event_flag = 0;				//It saves a line number in scenario file.
 var user_var = new Array();		//Its are user varibles.
@@ -17,12 +17,14 @@ var USER_VAR_MAX = 10;			//Max size of user varibles.
 var read_flag = new Array();	//Read flags
 
 var click_flag = true;			//Click control
+var timer_cnt = 0;				//Use wait command
 
 var data = new Array();
 
 var msg_wnd;
 var main_screen;
 var sub_screen;
+var debug_wnd;
 
 var bg_load_url = new Array();
 var bg_load_flag = new Array();
@@ -76,7 +78,8 @@ window.onload = function () {
 		main_screen = new MAINSCREEN();
 		sub_screen = new SUBSCREEN(main_screen);
 		msg_wnd = new MSGWINDOW();
-
+		//debagウィンドウ
+		if(DEBUG_MODE) debug_wnd = new DEBUGWINDOW();
 
 		game.rootScene.addEventListener(Event.TOUCH_START, function(e) {
 				clickSelector();
@@ -95,6 +98,11 @@ window.onload = function () {
 //////////////////////////////////////////////
 //Game loop
 function main(){
+	//waitが設定されている場合
+	if(timer_cnt > 0){
+		var timer_end_flag = t_wait();
+		if(timer_end_flag) clickSelector();
+	}
 
 }
 
@@ -150,20 +158,23 @@ function mainEvent(){
 		break;
 		
 		case "goto":
-			goto_cmd(d_cmd);
+			gotoCmd(d_cmd);
 			repeat_flag　=　true;
 		break;
 		
 		case "flagset":
-			flag_set(d_cmd);
+			flagSet(d_cmd);
+			repeat_flag　=　true;
 		break;
 		
 		case "flagcal":
-			flag_cal(d_cmd);
+			flagCal(d_cmd);
+			repeat_flag　=　true;
 		break;
 		
 		case "if":
-			if_cmd(d_cmd);
+			ifCmd(d_cmd);
+			repeat_flag　=　true;
 		break;
 		
 		case "select":
@@ -171,17 +182,18 @@ function mainEvent(){
 		break;
 		
 		case "wait":
-			wait_time(parseInt(d_cmd[TIME_NUM]));
+			waitTime(parseInt(d_cmd[TIME_NUM]));
 		break;
 		
 		case "se":
-			se_play(d_cmd);
+			sePlay(d_cmd);
+			repeat_flag　=　true;
 		break;
 		case "shake":
-			shake_init(d_cmd);
+			shake_init(d_cmd, "bg");
 		break;
 		case "charshake":
-			char_shake_init(d_cmd);
+			shake_init(d_cmd, "char");
 		break;
 		
 		case "#":
@@ -239,16 +251,20 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		this.age = 0;
 		this.opacity = 0;
 		this.wipe_mx = -32;
+		this.shake_time = 0;	//シェイクの時に使用
+		this.shake_pos = "";	//シェイクの時に使用
 		this.animationFlag = "none";
 		this.main_screen = main_screen;
 		//ワイプ用の画像保存バッファ
 		this.buffer = new Surface(GAME_WIDTH, GAME_MAIN_HEIGHT);
 		//アニメーション設定
 		this.addEventListener('enterframe', function (main_screen) {
+			//カット
 			if(this.animationFlag == "cut"){
 				this.opacity = 1;
 				this.end();
 			}
+			//ワイプ
 			else if(this.animationFlag == "wipe"){
 				for(var i = 0; i < 32; i++){
 					var aa = i * 20;			//x座標の開始位置を計算
@@ -266,9 +282,46 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 					this.end();
 				}
 			}
+			//フェード
 			else if(this.animationFlag == "fade"){
 				this.opacity += 0.1;
 				if(this.opacity >= 1.0) this.end();
+			}
+			//シェイク
+			else if(this.animationFlag == "shake"){
+				var r = Math.floor( Math.random() * 100 ) - 50;
+				if(this.shake_time < 2) r = 0;	//初期値に戻して描画させる;
+				var suf = new Surface(GAME_WIDTH, GAME_MAIN_HEIGHT);
+				var bg_left_x = (this.shake_pos == "bg") ? r : 0;
+				var char_left_x = (this.shake_pos == "left") ? r : 0;
+				var char_center_x = (this.shake_pos == "center") ? r : 0;
+				var char_right_x = (this.shake_pos == "right") ? r : 0;
+
+				suf.draw(game.assets[game_status['bg']],0 + bg_left_x, 0);
+				if(game_status['char_left'] != ""){
+					//20%ずらす。
+					var x = 0 - (game.assets[game_status['char_left']].width * 0.2) + char_left_x;
+					suf.draw(game.assets[game_status['char_left']], x, 0);
+				}
+
+				if(game_status['char_center'] != ""){
+					var x = (GAME_WIDTH - game.assets[game_status['char_center']].width) / 2;
+					x += char_center_x;
+					suf.draw(game.assets[game_status['char_center']], x, 0);
+				}
+
+				if(game_status['char_right'] != ""){
+					//20%ずらす。
+					var x = GAME_WIDTH - game.assets[game_status['char_right']].width + 
+						(game.assets[game_status['char_right']].width * 0.2);
+					x += char_right_x;
+					suf.draw(game.assets[game_status['char_right']], x, 0);
+				}
+				this.image = suf;
+				this.shake_time--;
+				if(this.shake_time <= 0){
+					this.end();
+				}
 			}
 		});
 		game.rootScene.addChild(this);
@@ -281,29 +334,52 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		this.animationFlag = "none";
 		clickSelector();
 	},
+	setShake: function (s_pos, s_time){
+		//シェイク時の初期化
+		this.animationFlag = "shake";
+		this.shake_time = s_time;
+		this.shake_pos = s_pos;
+		this.opacity = 1;
+	},
 	redraw: function (howto){
+		this.x = 0;
+		this.y = 0;
 		this.age = 0;
 		var suf = new Surface(GAME_WIDTH, GAME_MAIN_HEIGHT);
 		suf.draw(game.assets[game_status['bg']]);
 		
 		if(game_status['char_left'] != ""){
 			//20%ずらす。
-			var x = 0 - (game.assets[game_status['char_left']].width * 0.2);
-			suf.draw(game.assets[game_status['char_left']], x, 0);
+			try{
+				var x = 0 - (game.assets[game_status['char_left']].width * 0.2);
+				suf.draw(game.assets[game_status['char_left']], x, 0);
+			}catch(e){
+				if(DEBUG_MODE) alert("Alert : " + game_status['char_left']);
+			}
+			
 		}
 
 		if(game_status['char_center'] != ""){
-			var x = (GAME_WIDTH - game.assets[game_status['char_center']].width) / 2;
+			try {
+				var x = (GAME_WIDTH - game.assets[game_status['char_center']].width) / 2;
+				suf.draw(game.assets[game_status['char_center']], x, 0);
+			}catch(e){
+				if(DEBUG_MODE) alert("Alert : " + game_status['char_center']);
+			}
 			
-			suf.draw(game.assets[game_status['char_center']], x, 0);
+			
 		}
 
 		if(game_status['char_right'] != ""){
 			//20%ずらす。
-			var x = GAME_WIDTH - game.assets[game_status['char_right']].width + 
-				(game.assets[game_status['char_right']].width * 0.2);
+			try {
+				var x = GAME_WIDTH - game.assets[game_status['char_right']].width + 
+					(game.assets[game_status['char_right']].width * 0.2);
+				suf.draw(game.assets[game_status['char_right']], x, 0);
+			}catch(e){
+				if(DEBUG_MODE) alert("Alert : " + game_status['char_right']);
+			}
 			
-			suf.draw(game.assets[game_status['char_right']], x, 0);
 		}
 		
 		if(howto == "wipe"){
@@ -586,3 +662,44 @@ function transrateCommand(command){
 		}
 		return command;
 }
+
+///////////////////////////////////////////////////////////////////////
+//メッセージ表示クラス
+var DEBUGWINDOW = enchant.Class.create(enchant.Sprite, {
+	initialize: function (){
+		
+		enchant.Sprite.call(this, GAME_WIDTH, 200);
+		this.x = 20;
+		this.y = 20;
+		this.f_size = 12;
+		this.msg = "";
+			
+		//アニメーション設定
+		this.addEventListener('enterframe', function () {
+			this.msg = "";
+			this.msg += "char_left : " + game_status['char_left'] + "<br>";
+			this.msg += "char_center : " + game_status['char_center'] + "<br>";
+			this.msg += "char_right : " + game_status['char_right'] + "<br>";
+			this.msg += "bg : " + game_status['bg'] + "<br>";
+			this.msg += "bgm : " + game_status['bgm'] + "<br>";
+			this.msg += "timer_cnt : " + timer_cnt + "<br>";
+			for(var i = 0; i < user_var.length; i++){
+				this.msg += i + " = " + user_var[i] + "<br>";
+			}
+			label.text = this.msg;
+		});
+		game.rootScene.addChild(this);
+
+		var label= new Label();
+		//label.color = 'white';
+		label.font = "" + this.f_size + "px 'ＭＳ ゴシック'"
+		label.x = this.x;
+		label.y = this.y;
+		label.width = this.width;
+		label.text = "";
+		game.rootScene.addChild(label);
+	},
+	text: function (msg){
+		this.msg = msg;
+	}
+});
