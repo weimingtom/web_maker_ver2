@@ -13,6 +13,7 @@ var PRELOAD_MAX = 20;			//Max number of preload.
 var event_flag = 0;				//It saves a line number in scenario file.
 var user_var = new Array();		//Its are user varibles.
 var USER_VAR_MAX = 10;			//Max size of user varibles.
+var SEL_MAX = 4;				//Max number of select window.
 
 var read_flag = new Array();	//Read flags
 var preload_flag = false;		//画像ロード中にロード発生で失敗するのでロックをかける
@@ -26,6 +27,7 @@ var msg_wnd;
 var main_screen;
 var sub_screen;
 var debug_wnd;
+var sel_wnd = new Array();
 
 var bg_load_url = new Array();
 var bg_load_flag = new Array();
@@ -71,7 +73,7 @@ window.onload = function () {
 		user_var[i] = 0;
 	}
 
-	game.preload('data/sys/msg_wnd.png');
+	game.preload('data/sys/msg_wnd.png', 'data/sys/select_wnd.png');
 	initDataLoad(data);	//先行ロード
 
 	game.onload = function(){
@@ -179,7 +181,7 @@ function mainEvent(){
 		break;
 		
 		case "select":
-			select_item(d_cmd);
+			selectItem(d_cmd);
 		break;
 		
 		case "wait":
@@ -211,8 +213,6 @@ function mainEvent(){
 			msg_wnd.text(data[event_flag]);
 		break;
 	}
-	
-
 	
 	event_flag++;		//イベントフラグをインクリメント
 	
@@ -411,24 +411,71 @@ var MSGWINDOW = enchant.Class.create(enchant.Sprite, {
 			
 		//アニメーション設定
 		this.addEventListener('enterframe', function () {
-			label.text = this.msg;
+			this.m_label.text = this.msg;
 		});
 		game.rootScene.addChild(this);
 
-		var label= new Label();
-		label.color = 'white';
-		label.font = "" + this.f_size + "px 'ＭＳ ゴシック'"
-		label.x = this.x + 5;
-		label.y = this.y + 12;
-		label.width = this.width - 60;
-		label.text = "";
-		game.rootScene.addChild(label);
+		this.m_label= new Label();
+		this.m_label.color = 'white';
+		this.m_label.font = "" + this.f_size + "px 'ＭＳ ゴシック'"
+		this.m_label.x = this.x + 5;
+		this.m_label.y = this.y + 12;
+		this.m_label.width = this.width - 60;
+		this.m_label.text = "";
+		game.rootScene.addChild(this.m_label);
 	},
 	text: function (msg){
 		
 		this.msg = replaceCaractor(msg);
 	}
 });
+
+///////////////////////////////////////////////////////////////////////
+//選択肢表示クラス
+var SELWINDOW = enchant.Class.create(enchant.Sprite, {
+	initialize: function (x, y, msg, hata){
+		
+		enchant.Sprite.call(this, 500, 40);
+		this.image = game.assets['data/sys/select_wnd.png'];
+		this.x = x;
+		this.y = y;
+		this.f_size = 24;
+		this.msg = msg;
+		this.hata = hata;
+
+		//アニメーション設定
+		this.addEventListener('enterframe', function () {
+			this.sel_label.text = this.msg;
+		});
+		this.addEventListener('touchstart', function(e) {
+				execSelect(this.hata);
+		});
+		game.rootScene.addChild(this);
+
+		this.sel_label= new Label();
+		this.sel_label.color = 'white';
+		this.sel_label.font = "" + this.f_size + "px 'ＭＳ ゴシック'"
+		this.sel_label.x = this.x + 10;
+		this.sel_label.y = this.y + 5;
+		this.sel_label.width = this.width;
+		this.sel_label.text = "";
+		this.sel_label.hata = this.hata;
+		//ラベルにもイベントリスナー追加（ラベル上をクリックしても反応しないため
+		this.sel_label.addEventListener('touchstart', function(e) {
+				execSelect(hata);
+		});
+		game.rootScene.addChild(this.sel_label);
+	},
+	text: function (msg){	
+		this.msg = msg;
+	},
+	remove: function (){
+		game.rootScene.removeChild(this.sel_label);
+		game.rootScene.removeChild(this);
+		delete this;
+	}
+});
+
 /////////////////////////////////
 //Replace charactors
 function replaceCaractor(msg){

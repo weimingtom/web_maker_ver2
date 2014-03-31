@@ -280,7 +280,6 @@ function save(save_name){
 	var str_tmp="";
 	//var save_name="save_data000";
 	
-	
 	if(click_flag==0){
 		s=save_len_make(save_name);
 		//setCookie(save_name,s);	//クッキーを更新
@@ -344,22 +343,22 @@ function kidoku_make(){
 	var i;
 	var start=0;
 	var end=0;
-	var start_f = kidoku[0];		//一番最初の行のフラグ
+	var start_f = read_flag[0];		//一番最初の行のフラグ
 	var return_s = "";
 
 	for(i=0;i<data.length;i++){
 
-		if(start_f!=kidoku[i]){
-			end=i-1;	//フラグが変わる手前だから-1
+		if(start_f != read_flag[i]){
+			end = i-1;	//フラグが変わる手前だから-1
 			return_s += start + ":" + end + ":" + start_f + ",";
 			
-			start_f=kidoku[i];
-			start=i;
+			start_f = read_flag[i];
+			start = i;
 		}
 	}
 
 	//最後の処理。最後のブロックはそのまま抜けるので描きこまれない。それを防ぐ
-	end=i;	//フラグが変わる手前だから-1
+	end = i;	//フラグが変わる手前だから-1
 	return_s+=""+start+":"+end+":"+start_f+",";
 
 	return return_s;
@@ -462,43 +461,29 @@ function imgInitOnload(msg){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////選択肢選択モード
-
-function select_sel(sel_y){
-	var ok_flag=0;
-
-	ok_flag=goto_return(select_hata[sel_y]);
-
-	select_flag=0;
-return;
-}
-
-////////////////////////////////////////////////////////////////////
 //選択肢
-function select_item(){
+function selectItem(){
 	var i;
 	var c = 0;
 	var ok_flag = 0;
-	select_flag = event_flag;	//セレクトフラグに今の行を入れる
-	//click_flag = -1;
-	skip_mode = 0;	//スキップ一旦ストップ
+	var x = 70;
+	var y = 0;
 
-	for(i=0;i<select_max;i++){	//初期化
-		select_msg[i]="";
-		select_hata[i]="";
-	}
+	click_flag = false;
+	select_flag = event_flag;	//セレクトフラグに今の行を入れる
+	game_status['skip_mode'] = 0;	//スキップ一旦ストップ
 	
 	event_flag++;
 
-	for(i=0;i<select_max+1;i++){
-		d_cmd=data[event_flag].split(" ");		//スペース区切り
+	for(i = 0; i < SEL_MAX + 1; i++){
+		d_cmd = data[event_flag].split(" ");		//スペース区切り
 		if((d_cmd[SEL_MSG] == "selectend")||(d_cmd[SEL_MSG] == "■選択肢終わり")){
-			ok_flag=1;
+			ok_flag = 1;
 			break;
 		}
-		select_msg[i] = d_cmd[SEL_MSG];
-		select_hata[i] = d_cmd[SEL_HATA];
+		y = (i * 80) + 50;
+		sel_wnd[i] = new SELWINDOW(x, y, d_cmd[SEL_MSG], d_cmd[SEL_HATA]);
 		event_flag++;
-		c++;
 	}
 
 	if(ok_flag == 0){		//エラーメッセージ
@@ -507,70 +492,22 @@ function select_item(){
 		return;
 	}
 
-	select_draw(c, select_msg, select_hata);
 	event_flag = select_flag;	//セレクトの最初の行に戻す。（セーブ用）
 	return;
 }
+////////////////////////////////////////////////
+//選択肢実行
+function execSelect(hata){
+	click_flag = true;
 
-////////////////////////////////////////////////選択肢を書く。
-function select_draw(sel_cnt, sel_msg, sel_hata){
-	var str_tmp = "";
-
-	for(var i = 0; i < sel_cnt; i++){
-		str_tmp += '<div onClick="selectedItem(\'' + sel_hata[i] + '\')">' + sel_msg[i] + '</div><br>';
+	for(var i = 0; i < sel_wnd.length; i++){
+		sel_wnd[i].remove();
 	}
+	sel_wnd = new Array();
 
-	visibleSelectArea('selectArea');	//エリアをアクティブにする
-	document.getElementById('selectArea').innerHTML = str_tmp;
-	return;
-}
-/////////////////////////////////////////////////
-function selectedItem(hata){
 	var ok_flag = goto_return(hata);
-	click_flag = 0;
-	select_flag = 0;
-	repeat_flag = 0;
-
-	hiddenSelectArea('selectArea');	//エリアを非アクティブに
-	click_selector();
-	return;
+	clickSelector();
 }
-
-//////////////////////////////////////////////
-//領域表示
-function visibleSelectArea(area_name){
-	document.getElementById(area_name).style.visibility = 'visible';
-	document.getElementById(area_name).style.position = 'absolute';
-	document.getElementById(area_name).style.width = GAME_WIDTH + 'px';
-	document.getElementById(area_name).style.height = GAME_HEIGHT - 80 + 'px';
-	document.getElementById(area_name).style.left = '0px';
-	document.getElementById(area_name).style.top = '0px';
-	return;
-}
-//////////////////////////////////////////////
-//領域非表示
-function hiddenSelectArea(area_name){
-	document.getElementById(area_name).style.visibility = 'hidden';
-	document.getElementById(area_name).style.position = 'relative';
-	document.getElementById(area_name).style.width = '0px';
-	document.getElementById(area_name).style.height = '0px';
-	return;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////wait
@@ -597,18 +534,6 @@ function t_wait(){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////
 //ifコマンド
 function ifCmd(d_cmd){
