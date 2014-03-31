@@ -1097,17 +1097,17 @@ function charLoad(d_cmd){
 	//img_data.src=d_cmd[CHAR_PATH];
 	img_num = urlSearch(char_load_url, d_cmd[CHAR_PATH]);
 	
+	
 	//	例外
-	if(!char_load_flag[img_num]){	//なかった場合
+	if((!char_load_flag[img_num]) && (!preload_flag)) {	//なかった場合
 		game.load(char_load_url[img_num], function() {
 			//ロードが終わった時の処理
 			char_load_flag[img_num] = true;
 			char_current_no = img_num;
-			nextCharLoad();
 			sub_screen.redraw("cut");
 		});
 	}
-
+	
 
 	
 
@@ -1138,7 +1138,6 @@ function charLoad(d_cmd){
 	}
 	////////////////////////////////////////////
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-	nextCharLoad();
 		
 	sub_screen.redraw(mode);
 	
@@ -1156,17 +1155,17 @@ function bgLoad(d_cmd){
 	charFlagReset("all");
 	
 	var img_num = urlSearch(bg_load_url, d_cmd[BG_PATH]);
-	
+
 	//	例外
-	if(!bg_load_flag[img_num]){	//なかった場合
+	if((!bg_load_flag[img_num]) && (!preload_flag) ){	//なかった場合
 		game.load(bg_load_url[img_num], function() {
 			//ロードが終わった時の処理
 			bg_load_flag[img_num] = true;
 			bg_current_no = img_num;
-			nextBgLoad();
 		});
 	}
 	
+
 	game_status['bg'] = d_cmd[BG_PATH];			//現在のURLを保持
 	
 	if((d_cmd[BG_HOWTO] == "c") || (d_cmd[BG_HOWTO] == "cut") || (d_cmd[BG_HOWTO] == "カット")){
@@ -1187,7 +1186,7 @@ function bgLoad(d_cmd){
 		mode = "fade";
 	}
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-	nextBgLoad();
+	
 	sub_screen.redraw(mode);
 	
 	return;
@@ -1389,24 +1388,24 @@ function nextCharLoad(){
 	if(char_current_no < char_load_url.length){
 		//読み込まれていない場所なら
 		if(!char_load_flag[char_current_no]){
-			click_flag = false;
+			preload_flag = true;
 			game.load(char_load_url[char_current_no], function() {
 				//ロードが終わった時の処理
 				char_load_flag[char_current_no] = true;
 				char_current_no++;
-				click_flag = true;
+				preload_flag = false;
 			});
 		}
 		else{
 			//もし読み込み場所がTrueならFalseの場所を探す
 			for(var i = 0; i < char_load_url.length; i++){
 				if(!char_load_flag[i]){
-					click_flag = false;
+					preload_flag = true;
 					game.load(char_load_url[i], function() {
 						//ロードが終わった時の処理
 						char_load_flag[i] = true;
 						char_current_no = i + 1;
-						click_flag = true;
+						preload_flag = false;
 					});
 					break;
 				}
@@ -1421,24 +1420,24 @@ function nextBgLoad(){
 	if(bg_current_no < bg_load_url.length){
 		//読み込まれていない場所なら
 		if(!bg_load_flag[bg_current_no]){
-			click_flag = false;
+			preload_flag = true;
 			game.load(bg_load_url[bg_current_no], function() {
 				//ロードが終わった時の処理
 				bg_load_flag[bg_current_no] = true;
 				bg_current_no++;
-				click_flag = true;
+				preload_flag = false;
 			});
 		}
 		else{
 			//もし読み込み場所がTrueならFalseの場所を探す
 			for(var i = 0; i < bg_load_url.length; i++){
 				if(!bg_load_flag[i]){
-					click_flag = false;
+					preload_flag = true;
 					game.load(bg_load_url[i], function() {
 						//ロードが終わった時の処理
 						bg_load_flag[i] = true;
 						bg_current_no = i + 1;
-						click_flag = true;
+						preload_flag = false;
 					});
 					break;
 				}

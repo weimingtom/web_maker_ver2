@@ -15,6 +15,7 @@ var user_var = new Array();		//Its are user varibles.
 var USER_VAR_MAX = 10;			//Max size of user varibles.
 
 var read_flag = new Array();	//Read flags
+var preload_flag = false;		//画像ロード中にロード発生で失敗するのでロックをかける
 
 var click_flag = true;			//Click control
 var timer_cnt = 0;				//Use wait command
@@ -215,6 +216,9 @@ function mainEvent(){
 	
 	event_flag++;		//イベントフラグをインクリメント
 	
+	if(!preload_flag) nextCharLoad();
+	if(!preload_flag) nextBgLoad();
+
 	//if((skip_switch==1)&&(skip_mode==1)) repeat_flag=1;	//既読スキップモード時
 	return repeat_flag;
 }
