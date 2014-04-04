@@ -134,8 +134,8 @@
 }
 
 body{
-	background-color: #000000;
-	/* background:#ffffff url("../data/sys/bg01.png") repeat; */
+	/* background-color: #000000; */
+	background:#ffffff url("../data/sys/bg01.png") repeat;
 	margin:0;
 	padding:0;	
 	-webkit-user-select: none;

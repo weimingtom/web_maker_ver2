@@ -1,6 +1,6 @@
 enchant();
 
-var DEBUG_MODE = true;			//デバッグモード
+var DEBUG_MODE = false;			//デバッグモード
 
 var GAME_WIDTH =	640;		//Game width
 var GAME_HEIGHT =	800;		//Game height
@@ -20,6 +20,7 @@ var preload_flag = false;		//画像ロード中にロード発生で失敗する
 
 var click_flag = true;			//Click control
 var timer_cnt = 0;				//Use wait command
+var option_status = 'hidden';		//option display control. It has many status.
 
 var data = new Array();
 
@@ -73,7 +74,10 @@ window.onload = function () {
 		user_var[i] = 0;
 	}
 
-	game.preload('data/sys/msg_wnd.png', 'data/sys/select_wnd.png');
+	game.preload('data/sys/msg_wnd.png', 'data/sys/select_wnd.png', 'data/sys/setting.png',
+		'data/sys/load.png', 'data/sys/save.png', 'data/sys/backlog.png', 
+		'data/sys/sound_on.png', 'data/sys/sound_off.png', 'data/sys/effect_on.png', 'data/sys/effect_off.png',
+		'data/sys/read_on.png', 'data/sys/read_off.png');
 	initDataLoad(data);	//先行ロード
 
 	game.onload = function(){
@@ -81,6 +85,7 @@ window.onload = function () {
 		main_screen = new MAINSCREEN();
 		sub_screen = new SUBSCREEN(main_screen);
 		msg_wnd = new MSGWINDOW();
+		var setting_icon = new IMGBUTTON(0,0,80,80,'data/sys/setting.png','setting');
 		//debagウィンドウ
 		if(DEBUG_MODE) debug_wnd = new DEBUGWINDOW();
 
@@ -223,6 +228,33 @@ function mainEvent(){
 	return repeat_flag;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////
+//オプションを表示
+function displayOption(){
+	
+	if(option_status == 'hidden'){
+		click_flag = false;
+		option_status = 'display';
+		var w = 200;
+		var x = 95;
+		var y = 50;
+		var option_item = new Array();
+		option_item['load'] = new OPTIONBUTTON(x,-100,x,y,w,w,'vy','data/sys/load.png','load');
+		option_item['save'] = new OPTIONBUTTON(-100, y, x + w + 50, y, w, w,'vx','data/sys/save.png','save');
+		option_item['backlog'] = new OPTIONBUTTON(x,-100,x, y + w + 50, w, w, 'vy','data/sys/backlog.png','backlog');
+		option_item['sound'] = new OPTIONBUTTON(-200, y + w + 50, x + w + 50, y + w + 50, w, w,'vx','data/sys/sound_on.png','sound_mode');
+		option_item['effect'] = new OPTIONBUTTON(x, -100, x, y + (w + 50) * 2, w, w,'vy','data/sys/effect_on.png','effect_mode');
+		option_item['read'] = new OPTIONBUTTON(-300, y + (w + 50) * 2, x + w + 50, y + (w + 50) * 2, w, w,'vx','data/sys/read_on.png','read_mode');
+
+	}
+	else{
+		click_flag = true;
+		option_status = 'hidden';
+	}
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////
 //メイン表示クラス
@@ -475,6 +507,140 @@ var SELWINDOW = enchant.Class.create(enchant.Sprite, {
 		delete this;
 	}
 });
+///////////////////////////////////////////////////////////////////////
+//画像ボタンクラス
+var IMGBUTTON = enchant.Class.create(enchant.Sprite, {
+	initialize: function (x, y, w, h, path, mode){
+		
+		enchant.Sprite.call(this, w, h);
+		this.image = game.assets[path];
+		this.x = x;
+		this.y = y;
+
+		this.mode = mode;
+			
+		//タッチされた時の処理
+		this.addEventListener('touchstart', function(e) {
+			if(this.mode == "setting"){
+				displayOption();
+			}	
+		});
+		game.rootScene.addChild(this);
+	},
+	remove: function (){
+		game.rootScene.removeChild(this);
+		delete this;
+	}
+});
+
+///////////////////////////////////////////////////////////////////////
+//オプションボタンクラス
+var OPTIONBUTTON = enchant.Class.create(enchant.Sprite, {
+	initialize: function (init_x, init_y, x, y, w, h, move_mode, path, mode){
+		
+		enchant.Sprite.call(this, w, h);
+		this.p_path = path;
+		this.image = game.assets[getOptionPath(path, mode)];
+		this.move_mode = move_mode;	//移動モード
+		this.toX = x;				//到着予定場所
+		this.toY = y;				//到着予定場所
+		this.mode = mode;			//load,saveなどのモード
+		this.move_flag = 0;			//移動制御フラグ
+		//横からくるモード
+		if(this.move_mode == "vx"){
+			this.x = init_x;
+			this.y = y;
+			this.vx = 60;
+			this.vy = 0;
+		}
+		//縦からアニメーションするモード
+		else{
+			this.x = x;
+			this.y = init_y;
+			this.vx = 0;
+			this.vy = 70;
+		}
+		
+			
+		//タッチされた時の処理
+		this.addEventListener('touchstart', function(e) {
+			switch(this.mode){
+				case "sound_mode":
+					switchingSound();
+					this.image = game.assets[getOptionPath(this.p_path, this.mode)];
+				break;
+				case "effect_mode":
+					switchingEffect();
+					this.image = game.assets[getOptionPath(this.p_path, this.mode)];
+				break;
+				case "read_mode":
+					switchingRead();
+					this.image = game.assets[getOptionPath(this.p_path, this.mode)];
+				break;
+			}
+		});
+
+		//アニメーション設定
+		this.addEventListener('enterframe', function () {
+			if(this.move_flag == 0) {
+				this.x += this.vx;
+				this.y += this.vy;
+			}
+			if(this.move_flag == 2) {
+				this.x -= 70;
+			}
+
+
+			if((this.move_mode == "vx") && (this.x >= this.toX)){
+				this.x = this.toX;
+				this.move_flag = 1;
+			}
+			else if((this.move_mode == "vy") && (this.y >= this.toY)){
+				this.y = this.toY;
+				this.move_flag = 1;
+			}
+
+			//消す時
+			if((this.move_flag == 2) && (this.x <= -100)){
+				this.remove();
+			}
+
+			//もし終了だったら
+			if(option_status == 'hidden'){
+				this.move_flag = 2;
+			}
+		});
+
+
+		game.rootScene.addChild(this);
+	},
+	remove: function (){
+		game.rootScene.removeChild(this);
+		delete this;
+	}
+});
+
+/////////////////////////////////
+//オプション画像のパスを取得する。
+function getOptionPath(p_path, mode){
+	var path;
+	switch(mode){
+			case "sound_mode":
+				path = (game_status['sound_mode']) ? 'data/sys/sound_on.png' :  'data/sys/sound_off.png';
+			break;
+			case "effect_mode":
+				path = (game_status['effect_mode']) ? 'data/sys/effect_on.png' :  'data/sys/effect_off.png';
+			break;
+			case "read_mode":
+				path = (game_status['read_mode']) ? 'data/sys/read_on.png' :  'data/sys/read_off.png';
+			break;
+			default:
+				path = p_path;
+			break;
+	}
+
+	return path;
+}
 
 /////////////////////////////////
 //Replace charactors

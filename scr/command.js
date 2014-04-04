@@ -244,29 +244,23 @@ function draw_back_log(){
 }
 
 //////////////////////////////////////////////////////////音声モード変更
-function switching_sound(){
-	if(sound_f==1){	
-		sound_f=0;
+function switchingSound(){
+	if(game_status['sound_mode']){	
+		game_status['sound_mode'] = false;
 		document.getElementById("bgm").pause();
 	}else{
-		sound_f=1;
+		game_status['sound_mode'] = true;
 		document.getElementById("bgm").play();
 	}
-	scrollbar_y=getScrollPosition();	//スクロールバーの位置を取得しておく
-	footer_redraw();
+	
 	return;
 }
 
 //////////////////////////////////////////////////////////エフェクトモード変更
-function switching_effect(){
-	if(effect_f==1){	
-		effect_f=0;
+function switchingEffect(){
 
-	}else{
-		effect_f=1;
-	}
-	scrollbar_y=getScrollPosition();	//スクロールバーの位置を取得しておく
-	footer_redraw();
+	game_status['effect_mode'] = (game_status['effect_mode']) ? false : true;
+
 	return;
 }
 
