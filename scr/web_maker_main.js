@@ -20,7 +20,7 @@ var preload_flag = false;		//画像ロード中にロード発生で失敗する
 
 var click_flag = true;			//Click control
 var timer_cnt = 0;				//Use wait command
-var option_status = 'hidden';		//option display control. It has many status.
+var option_status = 'hidden_all';		//option display control. It has many status.
 
 var data = new Array();
 
@@ -77,7 +77,7 @@ window.onload = function () {
 	game.preload('data/sys/msg_wnd.png', 'data/sys/select_wnd.png', 'data/sys/setting.png',
 		'data/sys/load.png', 'data/sys/save.png', 'data/sys/backlog.png', 
 		'data/sys/sound_on.png', 'data/sys/sound_off.png', 'data/sys/effect_on.png', 'data/sys/effect_off.png',
-		'data/sys/read_on.png', 'data/sys/read_off.png');
+		'data/sys/read_on.png', 'data/sys/read_off.png', 'data/sys/save_base.png', 'data/sys/load_base.png');
 	initDataLoad(data);	//先行ロード
 
 	game.onload = function(){
@@ -233,7 +233,7 @@ function mainEvent(){
 //オプションを表示
 function displayOption(){
 	
-	if(option_status == 'hidden'){
+	if(option_status == 'hidden_all'){
 		click_flag = false;
 		option_status = 'display';
 		var w = 200;
@@ -250,7 +250,7 @@ function displayOption(){
 	}
 	else{
 		click_flag = true;
-		option_status = 'hidden';
+		option_status = 'hidden_all';
 	}
 }
 
@@ -565,6 +565,14 @@ var OPTIONBUTTON = enchant.Class.create(enchant.Sprite, {
 		//タッチされた時の処理
 		this.addEventListener('touchstart', function(e) {
 			switch(this.mode){
+				case "save":
+					option_status = 'hidden';
+					displaySaveArea(this.mode);
+				break;
+				case "load":
+					option_status = 'hidden';
+					displaySaveArea(this.mode);
+				break;
 				case "sound_mode":
 					switchingSound();
 					this.image = game.assets[getOptionPath(this.p_path, this.mode)];
@@ -586,11 +594,12 @@ var OPTIONBUTTON = enchant.Class.create(enchant.Sprite, {
 				this.x += this.vx;
 				this.y += this.vy;
 			}
+			//消すときの動作
 			if(this.move_flag == 2) {
 				this.x -= 70;
 			}
 
-
+			//目的地に到着したらモードを変更する。
 			if((this.move_mode == "vx") && (this.x >= this.toX)){
 				this.x = this.toX;
 				this.move_flag = 1;
@@ -606,7 +615,11 @@ var OPTIONBUTTON = enchant.Class.create(enchant.Sprite, {
 			}
 
 			//もし終了だったら
-			if(option_status == 'hidden'){
+			if((option_status == 'hidden') && (this.mode != 'save_wnd') && (this.mode != 'load_wnd')){
+				this.move_flag = 2;
+			}
+			//もし終了だったら
+			if(option_status == 'hidden_all'){
 				this.move_flag = 2;
 			}
 		});
@@ -615,6 +628,43 @@ var OPTIONBUTTON = enchant.Class.create(enchant.Sprite, {
 		game.rootScene.addChild(this);
 	},
 	remove: function (){
+		game.rootScene.removeChild(this);
+		delete this;
+	}
+});
+////////////////////////////////////////////////////////////////////////
+//オプションクラスを継承して作成
+var SAVEWINDOW = enchant.Class.create(OPTIONBUTTON, {
+    initialize: function (init_x, init_y, x, y, w, h, move_mode, path, mode, msg) {
+        OPTIONBUTTON.call(this, init_x, init_y, x, y, w, h, move_mode, path, mode);
+
+        this.msg = msg;
+        this.f_size = 20;
+
+        this.sel_label= new Label();
+		this.sel_label.color = 'white';
+		this.sel_label.font = "bold " + this.f_size + "px 'ＭＳ ゴシック'"
+		this.sel_label.x = this.x + 5;
+		this.sel_label.y = this.y + 5;
+		this.sel_label.width = w - this.f_size;
+		this.sel_label.text = msg;
+		//ラベルにもイベントリスナー追加（ラベル上をクリックしても反応しないため
+		this.addEventListener('touchstart', function(e) {
+		});
+
+		this.sel_label.addEventListener('touchstart', function(e) {
+		});
+
+        this.addEventListener('enterframe', function () {
+        	this.sel_label.x = this.x + 5;
+			this.sel_label.y = this.y + 5;
+			this.sel_label.text = msg;
+        });
+        game.rootScene.addChild(this.sel_label);
+
+    },
+    remove: function (){
+		game.rootScene.removeChild(this.sel_label);
 		game.rootScene.removeChild(this);
 		delete this;
 	}

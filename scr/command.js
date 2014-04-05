@@ -306,7 +306,7 @@ function save_len_make(save_name){
 	var date_date = date_nowdate.getDate();
 	var date_hour = date_nowdate.getHours();
 	var date_min = date_nowdate.getMinutes();
-	var str_timestamp = date_year+"-"+date_month+"-"+date_date+"-"+date_hour+"-"+date_min;	//日付の文字列作成
+	var str_timestamp = date_year+"/"+date_month+"/"+date_date+" "+date_hour+":"+date_min;	//日付の文字列作成
 	
 	var val = "";
 	for(var i=0;i<user_var_max;i++){
@@ -360,61 +360,55 @@ function kidoku_make(){
 
 /////////////////////////////////////
 //セーブ領域を書き込む
-function displaySaveArea(){
-	var str_msg　=　'';	
-	str_msg　+=　'<img src="./data/sys/save_icon.png">';
+function displaySaveArea(mode){
+	var w = 200;
+	var x = 95;
+	var y = 50;
+	var save_item = new Array();
+	var type = "";
+	var path;
+
+	if(mode == "save"){
+		type = "save_wnd";
+		path = 'data/sys/save_base.png';
+	}
+	else if(mode == "load"){
+		type = "load_wnd";
+		path = 'data/sys/load_base.png';
+	}
 	
-	for(var i = 0; i < SAVE_MAX; i++){
-		str_msg += makeSaveList(i, "save");
+	for(var i = 0; i < 6; i++){
+		var init_x = (i % 2 == 0) ? x : x + w + 50;
+		var str_msg = makeSaveList(i, type);
+		save_item[i] = new SAVEWINDOW(init_x,-100,init_x,y,w,w,'vy', path, type, str_msg);
+
+		//２段目の処理
+		if(i % 2 == 1){
+			y += w + 50;
+		}
 		
 	}
-	str_msg+='<img src="./data/sys/cansel_icon.png" onclick="returnCancel()">';
-
-	visibleSelectArea('saveArea');
-	document.getElementById('saveArea').innerHTML = str_msg;
+	
 	return;
 }
 
 
-/////////////////////////////////////
-//ロード領域を書き込む
-function displayLoadArea(){
-	var str_msg='';
-
-	str_msg+='<img src="./data/sys/load_icon.png">';
-
-	for(var i=0;i<SAVE_MAX;i++){
-		
-		str_msg += makeSaveList(i, "load");
-
-	}
-	str_msg+='<img src="./data/sys/cansel_icon.png" onclick="returnCancel()">';
-
-	
-	visibleSelectArea('saveArea');
-	document.getElementById('saveArea').innerHTML=str_msg;
-
-	return;
-}
 ////////////////////////////////////////////////////////
 //表示領域作成。type = save or load
 function makeSaveList(no, type){
 	var str_tmp = "";
 	var str_msg = "";
-	if(no < 1000) str_tmp = "" + no;
-	if(no < 100) str_tmp = "0" + str_tmp;
 	if(no < 10) str_tmp = "0" + str_tmp;
 	str_tmp = "save_data" + str_tmp;
 
 	var array_tmp = JSON.parse(localStorage.getItem(str_tmp));
-	str_msg += '<div onClick="' + type + '(\''+str_tmp+'\')">';
+	//str_msg += '<div onClick="' + type + '(\''+str_tmp+'\')">';
 	if(array_tmp == null){
 		str_msg += "なし";
 	}else{
-		str_msg += type + no + "&nbsp;:&nbsp;" + array_tmp['timestamp'] + "&nbsp;" + array_tmp['msg'];
+		str_msg += str_tmp + "<br>" + array_tmp['timestamp'] + "<br>" + array_tmp['msg'];
 	}
 
-	str_msg+='</div>';
 
 	return str_msg;
 }
