@@ -82,6 +82,8 @@ var OPT_KIDOKU=2;
 
 var KIDOKU_check="";
 
+var c_save_char = ","
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,71 +157,9 @@ function option_save(){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-///////////////////////////////////////////////////////////////
-//フッター部分を書く
-function footer_redraw(){
-	var s="";
-	
-	
-	s+='<table width="'+GAME_WIDTH+'"><tr>';
-	s+='<td><a href="#gameTop" onclick="displaySaveArea()"><img src="data/sys/save.png" border="0" title="セーブする"></a>&nbsp';
-	s+='<a href="#gameTop" onclick="displayLoadArea()"><img src="data/sys/load.png" border="0" title="ロードする"></a>';
-	s+='&nbsp&nbsp&nbsp&nbsp';
-	
-	if(skip_switch==1){		//既読スキップオンのとき
-		s+='<a href="#gameTop" onclick="switching_kidoku()"><img src="data/sys/kidoku_icon01.png" border="0" title="現在、既読スキップはオンです"></a>&nbsp';
-	}else{
-		s+='<a href="#gameTop" onclick="switching_kidoku()"><img src="data/sys/kidoku_icon02.png" border="0" title="現在、既読スキップはオフです"></a>&nbsp';
-	}
-	
-	/*
-	if(auto_read_f==1){		//自動モードオンのとき
-		s+='<a href="#"><img src="data/sys/auto_icon01.png" border="0" title="現在、オートモードはオンです"></a>&nbsp';
-	}else{
-		s+='<a href="#"><img src="data/sys/auto_icon02.png" border="0" title="現在、オートモードはオフです"></a>&nbsp';
-	}
-	*/
-	
-	if(back_log_f==1){		//バックログオンのとき
-		s+='<a href="#gameTop" onclick="draw_back_log()"><img src="data/sys/back_icon01.png" border="0" title="バックログ"></a>&nbsp';
-	}else{
-		s+='<a href="#gameTop" onclick="draw_back_log()"><img src="data/sys/back_icon02.png" border="0" title="バックログ"></a>&nbsp';
-	}
-	
-	if(sound_f==1){		//音楽オンのとき
-		s+='<a href="#gameTop" onclick="switching_sound()"><img src="data/sys/sound_icon01.png" border="0" title="現在、サウンドはオンです"></a>&nbsp';
-	}else{
-		s+='<a href="#gameTop" onclick="switching_sound()"><img src="data/sys/sound_icon02.png" border="0" title="現在、サウンドはオフです"></a>&nbsp';
-	}
-	
-	if(effect_f==1){		//エフェクトオンのとき
-		s+='<a href="#gameTop" onclick="switching_effect()"><img src="data/sys/effect_icon01.png" border="0" title="現在、エフェクトはオンです"></a>&nbsp';
-	}else{
-		s+='<a href="#gameTop" onclick="switching_effect()"><img src="data/sys/effect_icon02.png" border="0" title="現在、エフェクトはオフです"></a>&nbsp';
-	}
-	s+='</td>';
-	s += '<td><a href="http://milk0824.sakura.ne.jp/cgi-bin/webclap/clap.cgi" target="_blank"><IMG src="data/sys/clapping_24.gif" border="0" alt="WEB拍手ぱちぱちっと"></a></td>';
-	
-	s+='</tr></table>';
-	
-	document.getElementById("opt_area").innerHTML=s;
-	//document.getElementById("nextArea").innerHTML='<img src="./data/sys/next_icon.gif" title="お話を進める" onclick="click_selector()">';
-	return;
-}
-
-
 //////////////////////////////////////////////////////////既読モード変更
-function switching_kidoku(){
-	if(skip_switch==1){	
-		skip_switch=0;
-		skip_mode=0;
-	}else{
-		skip_switch=1;
-		skip_mode=1;
-	}
-	scrollbar_y=getScrollPosition();	//スクロールバーの位置を取得しておく
-	footer_redraw();
+function switchingRead(){
+	game_status['skip_mode'] = (game_status['skip_mode']) ? false : true;
 	return;
 }
 
@@ -267,130 +207,6 @@ function switchingEffect(){
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////coockieに保存
-function save(save_name){
-	if(!confirm(save_name + "にセーブをします。よろしいですか？")) return;
-	var s;
-	var str_tmp="";
-	//var save_name="save_data000";
-	
-	if(click_flag==0){
-		s=save_len_make(save_name);
-		//setCookie(save_name,s);	//クッキーを更新
-		//KIDOKU_check = kidoku_make();
-		//setCookie("kidoku",KIDOKU_check);
-		
-		var array_tmp=new Array();
-		array_tmp=s.split(c_save_char);
-		str_tmp="ゲームのデータを保存しました。\n";
-		
-		alert(str_tmp);
-
-		//document.getElementById("test_view").innerHTML=s;
-	}else{
-		alert("ここでは保存できません。");
-	}
-	scrollbar_y=getScrollPosition();	//スクロールバーの位置を取得しておく
-	footer_redraw();		//フッター再描画
-	returnCancel();			//セーブウィンドウを消す
-	return;
-}
-
-///////////////////////////coockieに保存するときの文字列を作成
-function save_len_make(save_name){
-	var s="";
-	var tmp_event_flag = event_flag-1;
-	var date_nowdate = new Date();				//日付取得
-	var date_year = date_nowdate.getFullYear();
-	var date_month = date_nowdate.getMonth()+1;
-	var date_date = date_nowdate.getDate();
-	var date_hour = date_nowdate.getHours();
-	var date_min = date_nowdate.getMinutes();
-	var str_timestamp = date_year+"/"+date_month+"/"+date_date+" "+date_hour+":"+date_min;	//日付の文字列作成
-	
-	var val = "";
-	for(var i=0;i<user_var_max;i++){
-		val += user_var[i];
-		val += c_save_char;
-	}
-
-	//オブジェクトを作り、JSON形式で保存
-	var obj = {
-		timestamp: 		str_timestamp,
-		event_flag: 	tmp_event_flag,
-		char_left: 		current_char_url[CHAR_L_F],
-		char_center: 	current_char_url[CHAR_C_F],
-		char_right: 	current_char_url[CHAR_R_F],
-		bg_url: 		current_bg_url,
-		bgm_url: 		current_bgm_url,
-		user_val: 		val,
-		msg: 			exchangeStr(data[tmp_event_flag].substr(0,10))+"…",	//そのときの読んでいる文章データを登録
-		kidoku: 		KIDOKU_check = kidoku_make()
-	}
-
-	localStorage.setItem(save_name, JSON.stringify(obj));
-	return s;
-}
-
-/////////////////////////////////////既読フラグ保存時の文字列作成
-function kidoku_make(){
-	var i;
-	var start=0;
-	var end=0;
-	var start_f = read_flag[0];		//一番最初の行のフラグ
-	var return_s = "";
-
-	for(i=0;i<data.length;i++){
-
-		if(start_f != read_flag[i]){
-			end = i-1;	//フラグが変わる手前だから-1
-			return_s += start + ":" + end + ":" + start_f + ",";
-			
-			start_f = read_flag[i];
-			start = i;
-		}
-	}
-
-	//最後の処理。最後のブロックはそのまま抜けるので描きこまれない。それを防ぐ
-	end = i;	//フラグが変わる手前だから-1
-	return_s+=""+start+":"+end+":"+start_f+",";
-
-	return return_s;
-}
-
-/////////////////////////////////////
-//セーブ領域を書き込む
-function displaySaveArea(mode){
-	var w = 200;
-	var x = 95;
-	var y = 50;
-	var save_item = new Array();
-	var type = "";
-	var path;
-
-	if(mode == "save"){
-		type = "save_wnd";
-		path = 'data/sys/save_base.png';
-	}
-	else if(mode == "load"){
-		type = "load_wnd";
-		path = 'data/sys/load_base.png';
-	}
-	
-	for(var i = 0; i < 6; i++){
-		var init_x = (i % 2 == 0) ? x : x + w + 50;
-		var str_msg = makeSaveList(i, type);
-		save_item[i] = new SAVEWINDOW(init_x,-100,init_x,y,w,w,'vy', path, type, str_msg);
-
-		//２段目の処理
-		if(i % 2 == 1){
-			y += w + 50;
-		}
-		
-	}
-	
-	return;
-}
 
 
 ////////////////////////////////////////////////////////
@@ -398,8 +214,7 @@ function displaySaveArea(mode){
 function makeSaveList(no, type){
 	var str_tmp = "";
 	var str_msg = "";
-	if(no < 10) str_tmp = "0" + str_tmp;
-	str_tmp = "save_data" + str_tmp;
+	str_tmp = "save_data" + no;
 
 	var array_tmp = JSON.parse(localStorage.getItem(str_tmp));
 	//str_msg += '<div onClick="' + type + '(\''+str_tmp+'\')">';
@@ -412,19 +227,6 @@ function makeSaveList(no, type){
 
 	return str_msg;
 }
-
-///////////////////////////////
-//キャンセル時の接続
-function returnCancel(){
-	hiddenSelectArea('saveArea');
-	scrollbar_y=getScrollPosition();	//スクロールバーの位置を取得しておく
-	footer_redraw();		//フッター再描画
-	return;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 
@@ -459,7 +261,7 @@ function selectItem(){
 
 	click_flag = false;
 	select_flag = event_flag;	//セレクトフラグに今の行を入れる
-	game_status['skip_mode'] = 0;	//スキップ一旦ストップ
+	game_status['skip_mode'] = false;	//スキップ一旦ストップ
 	
 	event_flag++;
 
@@ -752,19 +554,7 @@ function goto_return(goto_f){
 		alert(s);
 	}
 	else{
-		//直近の画像を検索し、そこから１０枚先行読み込み
-		no = SearchNearImgUrl(event_flag, "char");
-		if(no != 0){
-			preloadImg(no, "char", PRELOAD_MAX);
-		}
-		no = SearchNearImgUrl(event_flag, "bg");
-		if(no != 0){
-			preloadImg(no, "bg", PRELOAD_MAX);
-		}
-		no = SearchNearImgUrl(event_flag, "se");
-		if(no != 0){
-			preloadImg(no, "se", PRELOAD_MAX);
-		}
+		loadPreload(event_flag);
 	}
 	
 	return ok_f;
@@ -880,7 +670,8 @@ function charRm(d_cmd){
 	}
 	////////////////////////////////////////////
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-	
+	if((game_status['skip_mode']) && (read_flag[event_flag]) == 1) mode = "cut";		//エフェクトモードが０のときは強制的にカット
+
 	sub_screen.redraw(mode);
 	
 	return;
@@ -1051,7 +842,8 @@ function charLoad(d_cmd){
 	}
 	////////////////////////////////////////////
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-		
+	if((game_status['skip_mode']) && (read_flag[event_flag]) == 1) mode = "cut";		//エフェクトモードが０のときは強制的にカット
+	
 	sub_screen.redraw(mode);
 	
 	return;
@@ -1099,7 +891,8 @@ function bgLoad(d_cmd){
 		mode = "fade";
 	}
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
-	
+	if((game_status['skip_mode']) && (read_flag[event_flag]) == 1) mode = "cut";		//エフェクトモードが０のときは強制的にカット
+
 	sub_screen.redraw(mode);
 	
 	return;
@@ -1187,40 +980,6 @@ function title_load(){
 	return;
 }
 
-////////////////////////////////////////////////////
-//現在位置から一番近い画像ロードの位置を取得
-function SearchNearImgUrl(current_no, mode){
-	var check_data = new Array();
-	var path = "";
-	var int_f = 0;
-	if(mode == "bg"){
-		check_data = bg_load_url;
-		path = BG_PATH;
-	}
-	else if(mode == "char"){
-		check_data = char_load_url;
-		path = CHAR_PATH;
-	}
-	else if(mode == "se"){
-		check_data = se_load_url;
-		path = SE_PATH;
-	}
-	for(var i = current_no; i < data.length; i++){
-		var str_tmp = transrateCommand(data[i]);
-		var d_cmd= str_tmp.split(" ");		//スペース区切り
-
-		if(d_cmd[0] == mode){
-			for(var j = 0; j < check_data.length; j++){
-				if(check_data[j] == d_cmd[path]){
-					int_f = j;
-					break;
-				} 
-			}
-			break;
-		}
-	}
-	return int_f;
-}
 
 //////////////////////////////////////////////
 //現在の位置から指定枚画像を読み込む
@@ -1360,5 +1119,37 @@ function nextBgLoad(){
 	}
 	return;
 }
-
+///////////////////////////////////
+//先読み
+function nextSeLoad(){
+	if(se_current_no < se_load_url.length){
+		//読み込まれていない場所なら
+		if(!se_load_flag[se_current_no]){
+			preload_flag = true;
+			game.load(se_load_url[se_current_no], function() {
+				//ロードが終わった時の処理
+				se_load_flag[se_current_no] = true;
+				se_current_no++;
+				preload_flag = false;
+			});
+		}
+		else{
+			//もし読み込み場所がTrueならFalseの場所を探す
+			for(var i = 0; i < se_load_url.length; i++){
+				if(!se_load_flag[i]){
+					preload_flag = true;
+					game.load(se_load_url[i], function() {
+						//ロードが終わった時の処理
+						se_load_flag[i] = true;
+						se_current_no = i + 1;
+						preload_flag = false;
+					});
+					break;
+				}
+			}
+		}
+		
+	}
+	return;
+}
 

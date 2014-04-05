@@ -17,6 +17,7 @@ var SEL_MAX = 4;				//Max number of select window.
 
 var read_flag = new Array();	//Read flags
 var preload_flag = false;		//画像ロード中にロード発生で失敗するのでロックをかける
+var preload_turn_num = 0;		//先行画像ロードの順番
 
 var click_flag = true;			//Click control
 var timer_cnt = 0;				//Use wait command
@@ -136,9 +137,6 @@ function mainEvent(){
 	var str_tmp = transrateCommand(data[event_flag]);
 	var d_cmd= str_tmp.split(" ");		//スペース区切り
 
-	if((game_status['skip_mode']) && (read_flag[event_flag] == 0)) skip_mode = false;	//未読だった場合、スキップモードをオフに
-	read_flag[event_flag] = 1;			//既読フラグon
-
 	switch(d_cmd[0]){
 		case "bg":
 			bgLoad(d_cmd);
@@ -219,43 +217,23 @@ function mainEvent(){
 		break;
 	}
 	
+
+	if((game_status['skip_mode']) && (read_flag[event_flag] == 0)) game_status['skip_mode'] = false;	//未読だった場合、スキップモードをオフに
+	if((game_status['skip_mode']) && (read_flag[event_flag] == 1)){
+		repeat_flag = true;
+	}
+	read_flag[event_flag] = 1;			//既読フラグon
+
 	event_flag++;		//イベントフラグをインクリメント
 	
-	if(!preload_flag) nextCharLoad();
-	if(!preload_flag) nextBgLoad();
-
+	loadSwitcher();		//先行ロード
+	
 	//if((skip_switch==1)&&(skip_mode==1)) repeat_flag=1;	//既読スキップモード時
 	return repeat_flag;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////
-//オプションを表示
-function displayOption(){
-	
-	if(option_status == 'hidden_all'){
-		click_flag = false;
-		option_status = 'display';
-		var w = 200;
-		var x = 95;
-		var y = 50;
-		var option_item = new Array();
-		option_item['load'] = new OPTIONBUTTON(x,-100,x,y,w,w,'vy','data/sys/load.png','load');
-		option_item['save'] = new OPTIONBUTTON(-100, y, x + w + 50, y, w, w,'vx','data/sys/save.png','save');
-		option_item['backlog'] = new OPTIONBUTTON(x,-100,x, y + w + 50, w, w, 'vy','data/sys/backlog.png','backlog');
-		option_item['sound'] = new OPTIONBUTTON(-200, y + w + 50, x + w + 50, y + w + 50, w, w,'vx','data/sys/sound_on.png','sound_mode');
-		option_item['effect'] = new OPTIONBUTTON(x, -100, x, y + (w + 50) * 2, w, w,'vy','data/sys/effect_on.png','effect_mode');
-		option_item['read'] = new OPTIONBUTTON(-300, y + (w + 50) * 2, x + w + 50, y + (w + 50) * 2, w, w,'vx','data/sys/read_on.png','read_mode');
-
-	}
-	else{
-		click_flag = true;
-		option_status = 'hidden_all';
-	}
-}
-
-
-
+//////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 //メイン表示クラス
 var MAINSCREEN = enchant.Class.create(enchant.Sprite, {
@@ -368,6 +346,7 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		this.wipe_mx = -32;
 		click_flag = true;
 		this.animationFlag = "none";
+		if((game_status['skip_mode']) && (read_flag[event_flag] == 1)) repeat_flag = true;
 		clickSelector();
 	},
 	setShake: function (s_pos, s_time){
@@ -635,11 +614,13 @@ var OPTIONBUTTON = enchant.Class.create(enchant.Sprite, {
 ////////////////////////////////////////////////////////////////////////
 //オプションクラスを継承して作成
 var SAVEWINDOW = enchant.Class.create(OPTIONBUTTON, {
-    initialize: function (init_x, init_y, x, y, w, h, move_mode, path, mode, msg) {
+    initialize: function (init_x, init_y, x, y, w, h, move_mode, path, mode, msg, save_name) {
         OPTIONBUTTON.call(this, init_x, init_y, x, y, w, h, move_mode, path, mode);
 
         this.msg = msg;
+        this.save_name = save_name;
         this.f_size = 20;
+        this.close_flag = 0;
 
         this.sel_label= new Label();
 		this.sel_label.color = 'white';
@@ -648,18 +629,33 @@ var SAVEWINDOW = enchant.Class.create(OPTIONBUTTON, {
 		this.sel_label.y = this.y + 5;
 		this.sel_label.width = w - this.f_size;
 		this.sel_label.text = msg;
-		//ラベルにもイベントリスナー追加（ラベル上をクリックしても反応しないため
-		this.addEventListener('touchstart', function(e) {
-		});
 
-		this.sel_label.addEventListener('touchstart', function(e) {
-		});
 
         this.addEventListener('enterframe', function () {
         	this.sel_label.x = this.x + 5;
 			this.sel_label.y = this.y + 5;
 			this.sel_label.text = msg;
+
+			//セーブウィンドウのみのアニメーションスイッチ
+			if(option_status == 'close_save'){
+				this.move_flag = 2;
+				this.sel_label.text = "";
+			}
         });
+        //ラベルにもイベントリスナー追加（ラベル上をクリックしても反応しないため
+		this.addEventListener('touchstart', function(e) {
+			if(this.mode == 'save_wnd') save(save_name);
+			if(this.mode == 'load_wnd') {
+				saveDataLoad(save_name);
+			}
+		});
+
+		this.sel_label.addEventListener('touchstart', function(e) {
+			if(this.mode == 'save_wnd') save(save_name);
+			if(this.mode == 'load_wnd') {
+				saveDataLoad(save_name);
+			}
+		});
         game.rootScene.addChild(this.sel_label);
 
     },
@@ -670,59 +666,9 @@ var SAVEWINDOW = enchant.Class.create(OPTIONBUTTON, {
 	}
 });
 
-/////////////////////////////////
-//オプション画像のパスを取得する。
-function getOptionPath(p_path, mode){
-	var path;
-	switch(mode){
-			case "sound_mode":
-				path = (game_status['sound_mode']) ? 'data/sys/sound_on.png' :  'data/sys/sound_off.png';
-			break;
-			case "effect_mode":
-				path = (game_status['effect_mode']) ? 'data/sys/effect_on.png' :  'data/sys/effect_off.png';
-			break;
-			case "read_mode":
-				path = (game_status['read_mode']) ? 'data/sys/read_on.png' :  'data/sys/read_off.png';
-			break;
-			default:
-				path = p_path;
-			break;
-	}
-
-	return path;
-}
-
-/////////////////////////////////
-//Replace charactors
-function replaceCaractor(msg){
-	msg = msg.replace("】","】<br>");
-	msg = msg.replace(/＠/g,"<br>");
-	return msg;
-}
-
-//////////////////////////////////ストーリーデータをｊｓで運用するときのコード
-function dataLoad(){
-	var data = file_data;	//シナリオデータ読み込み
-
-	//データの余計な部分を削除
-	//data.splice(0,2);
-	for(var i = 0; i < data.length; i++){
-		data[i] = data[i].replace(/\r/g,"");	//改行削除
-		data[i] = data[i].replace(/\n/g,"");
-		//data[i] = exchangeStr(data[i]);
-		
-		if(data[i] == ""){
-			data.splice(i,1);	//空白行削除
-			i--;				//文字も次も空白の場合に飛ばされるのを防ぐ
-		}
-	}
-
-	return data;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////画像先行ロード
+///////////////画像先行ロード
 function initDataLoad(data){
 	var max;
 	var array_tmp = new Array();
