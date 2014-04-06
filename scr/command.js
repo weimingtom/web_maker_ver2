@@ -88,28 +88,6 @@ var c_save_char = ","
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////オプション
-function option_draw(){
-	var s = "";
-	var bg_v=bgm_volume　*　10;
-	var se_v=se_volume　*　10;
-
-	s += '<div onclick="displaySaveArea()">セーブ</div>';
-	s += '<div onclick="displayLoadArea()">ロード</div>';
-
-	if(skip_switch==1){
-		s+='<div>既読スキップ</b>&nbsp;<input type="checkbox" id="kidoku_checkbox" checked></div>';
-	}else{
-		s+='<div>既読スキップ</b>&nbsp;<input type="checkbox" id="kidoku_checkbox"></div>';
-	}
-	s += '<div><img src="data/sys/BGM_vol.png" alt="BGMのボリューム"><input type="text" id="bgm_vol" size="2" maxlength="2" value="'+bg_v+'">(0～10)</div>';
-	s += '<div><img src="data/sys/Se_vol.png" alt="SEのボリューム"><input type="text" id="se_vol" size="2" maxlength="2" value="'+se_v+'">(0～10)</div>';
-	s += '<div><input type="button" value="設定" onclick="option_save()"></div>';
-	s += '<img src="./data/sys/cansel_icon.png" onclick="returnCancel()">';
-
-	visibleSelectArea("saveArea");
-	document.getElementById("saveArea").innerHTML=s;
-
-}
 
 //////////////////////////////////////////////////////オプション決定
 
@@ -157,11 +135,6 @@ function option_save(){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////既読モード変更
-function switchingRead(){
-	game_status['skip_mode'] = (game_status['skip_mode']) ? false : true;
-	return;
-}
 
 ///////////////////////////////////////////////////////バックログ出力
 function draw_back_log(){
@@ -183,26 +156,6 @@ function draw_back_log(){
 	return;
 }
 
-//////////////////////////////////////////////////////////音声モード変更
-function switchingSound(){
-	if(game_status['sound_mode']){	
-		game_status['sound_mode'] = false;
-		document.getElementById("bgm").pause();
-	}else{
-		game_status['sound_mode'] = true;
-		document.getElementById("bgm").play();
-	}
-	
-	return;
-}
-
-//////////////////////////////////////////////////////////エフェクトモード変更
-function switchingEffect(){
-
-	game_status['effect_mode'] = (game_status['effect_mode']) ? false : true;
-
-	return;
-}
 
 
 
@@ -874,20 +827,15 @@ function bgLoad(d_cmd){
 	game_status['bg'] = d_cmd[BG_PATH];			//現在のURLを保持
 	
 	if((d_cmd[BG_HOWTO] == "c") || (d_cmd[BG_HOWTO] == "cut") || (d_cmd[BG_HOWTO] == "カット")){
-		//bgFadeSetting(buf_load_bg[img_num].src, 0);
-		//repeat_flag=1;
 		mode = "cut";
 	}
 	else if((d_cmd[BG_HOWTO] == "w") || (d_cmd[BG_HOWTO] == "wipe") || (d_cmd[BG_HOWTO] == "ワイプ")){
-		//bgFadeSetting(buf_load_bg[img_num].src, FADE_SPEED);
 		mode = "wipe";
 	}
 	else if((d_cmd[BG_HOWTO] == "f") || (d_cmd[BG_HOWTO] == "fade") || (d_cmd[BG_HOWTO] == "フェード")){
-		//bgFadeSetting(buf_load_bg[img_num].src, FADE_SPEED);
 		mode = "fade";
 	}
 	else{
-		//bgFadeSetting(buf_load_bg[img_num].src, FADE_SPEED);
 		mode = "fade";
 	}
 	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット

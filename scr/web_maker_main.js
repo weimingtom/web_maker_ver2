@@ -80,6 +80,7 @@ window.onload = function () {
 		'data/sys/sound_on.png', 'data/sys/sound_off.png', 'data/sys/effect_on.png', 'data/sys/effect_off.png',
 		'data/sys/read_on.png', 'data/sys/read_off.png', 'data/sys/save_base.png', 'data/sys/load_base.png');
 	initDataLoad(data);	//先行ロード
+	loadOption();
 
 	game.onload = function(){
 
@@ -218,7 +219,7 @@ function mainEvent(){
 	}
 	
 
-	if((game_status['skip_mode']) && (read_flag[event_flag] == 0)) game_status['skip_mode'] = false;	//未読だった場合、スキップモードをオフに
+	//if((game_status['skip_mode']) && (read_flag[event_flag] == 0)) game_status['skip_mode'] = false;	//未読だった場合、スキップモードをオフに
 	if((game_status['skip_mode']) && (read_flag[event_flag] == 1)){
 		repeat_flag = true;
 	}

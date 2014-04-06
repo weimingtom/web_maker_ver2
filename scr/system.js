@@ -96,6 +96,32 @@ function searchNearImgUrl(current_no, mode){
 	return int_f;
 }
 
+//////////////////////////////////////////////////////////音声モード変更
+function switchingSound(){
+	if(game_status['sound_mode']){	
+		game_status['sound_mode'] = false;
+		document.getElementById("bgm").pause();
+	}else{
+		game_status['sound_mode'] = true;
+		document.getElementById("bgm").play();
+	}
+	saveOption();
+	return;
+}
+
+//////////////////////////////////////////////////////////エフェクトモード変更
+function switchingEffect(){
+
+	game_status['effect_mode'] = (game_status['effect_mode']) ? false : true;
+	saveOption();
+	return;
+}
+//////////////////////////////////////////////////////////既読モード変更
+function switchingRead(){
+	game_status['skip_mode'] = (game_status['skip_mode']) ? false : true;
+	saveOption();
+	return;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -371,5 +397,23 @@ function loadSwitcher(){
 
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+//オプションセーブ(ゲームステータスをそのまま保存)
+function saveOption(){
+	var save_name = "tj_option";
+	localStorage.setItem(save_name, JSON.stringify(game_status));
+}
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+//オプションロード
+function loadOption(){
+	var save_name = "tj_option";
+	var s = JSON.parse(localStorage.getItem(save_name));
 
+	//データがなかったら戻る
+	if(s == null) return;
+
+	game_status['sound_mode'] = s['sound_mode'];
+	game_status['effect_mode'] = s['effect_mode'];
+	game_status['skip_mode'] = s['skip_mode'];
+}
