@@ -143,7 +143,7 @@ function mainEvent(){
 			bgLoad(d_cmd);
 		break;
 		case "title":
-			title_load(d_cmd);
+			titleLoad(d_cmd);
 		break;
 	
 		case "char":
@@ -409,6 +409,49 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		
 	}
 });
+
+///////////////////////////////////////////////////////////////////////
+//メイン表示クラス
+var TITLESCREEN = enchant.Class.create(enchant.Sprite, {
+	initialize: function (path){
+		
+		enchant.Sprite.call(this, GAME_WIDTH, GAME_HEIGHT);
+		this.image = game.assets[path];
+		this.opacity = 0;
+		this.x = 0;
+		this.y = 0;
+		this.animationFlag = "start";
+
+		//表示時にタッチされたら
+		this.addEventListener('touchstart', function(e) {
+				if(this.animationFlag == "stop") this.end();
+		});
+			
+		//アニメーション設定
+		this.addEventListener('enterframe', function () {
+			if(this.animationFlag == "start"){
+				if(this.opacity < 1) this.opacity += 0.1;
+				if(this.opacity >= 1) this.animationFlag = "stop";
+			}
+			if(this.animationFlag == "end"){
+				if(this.opacity > 0) this.opacity -= 0.1;
+				if(this.opacity <= 0) this.remove();
+			}
+			
+		});
+		game.rootScene.addChild(this);
+	},
+	end: function(){
+		this.animationFlag = "end";
+	},
+	remove: function (){
+		click_flag = true;
+		game.rootScene.removeChild(this);
+		delete this;
+		clickSelector();
+	}
+});
+
 ///////////////////////////////////////////////////////////////////////
 //メッセージ表示クラス
 var MSGWINDOW = enchant.Class.create(enchant.Sprite, {
@@ -426,6 +469,7 @@ var MSGWINDOW = enchant.Class.create(enchant.Sprite, {
 			this.m_label.text = this.msg;
 		});
 		game.rootScene.addChild(this);
+		//game.rootScene.insertBefore(this);
 
 		this.m_label= new Label();
 		this.m_label.color = 'white';

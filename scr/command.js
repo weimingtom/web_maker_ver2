@@ -169,7 +169,12 @@ function makeSaveList(no, type){
 	var str_msg = "";
 	str_tmp = "save_data" + no;
 
-	var array_tmp = JSON.parse(localStorage.getItem(str_tmp));
+	try{
+		var array_tmp = JSON.parse(localStorage.getItem(str_tmp));
+	} catch(e) {
+		storageError();
+		return;
+	}
 	//str_msg += '<div onClick="' + type + '(\''+str_tmp+'\')">';
 	if(array_tmp == null){
 		str_msg += "なし";
@@ -846,6 +851,42 @@ function bgLoad(d_cmd){
 	return;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////タイトルコマンド
+function titleLoad(d_cmd){
+	var mode = "";
+	click_flag = false;
+	
+	var img_num = urlSearch(bg_load_url, d_cmd[BG_PATH]);
+
+	//	例外
+	if((!bg_load_flag[img_num]) && (!preload_flag) ){	//なかった場合
+		game.load(bg_load_url[img_num], function() {
+			//ロードが終わった時の処理
+			bg_load_flag[img_num] = true;
+			bg_current_no = img_num;
+		});
+	}
+
+	if((d_cmd[BG_HOWTO] == "c") || (d_cmd[BG_HOWTO] == "cut") || (d_cmd[BG_HOWTO] == "カット")){
+		mode = "cut";
+	}
+	else if((d_cmd[BG_HOWTO] == "w") || (d_cmd[BG_HOWTO] == "wipe") || (d_cmd[BG_HOWTO] == "ワイプ")){
+		mode = "wipe";
+	}
+	else if((d_cmd[BG_HOWTO] == "f") || (d_cmd[BG_HOWTO] == "fade") || (d_cmd[BG_HOWTO] == "フェード")){
+		mode = "fade";
+	}
+	else{
+		mode = "fade";
+	}
+	if(!game_status['effect_mode']) mode = "cut";		//エフェクトモードが０のときは強制的にカット
+	if((game_status['skip_mode']) && (read_flag[event_flag]) == 1) mode = "cut";		//エフェクトモードが０のときは強制的にカット
+
+	var titlebuff = new TITLESCREEN(d_cmd[BG_PATH]);
+	
+	return;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

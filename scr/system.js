@@ -270,7 +270,12 @@ function saveDataLoad(save_name){
 	var cnt=0;
 	var d = new Array();
 
-	var s = JSON.parse(localStorage.getItem(save_name));
+	try{
+		var s = JSON.parse(localStorage.getItem(save_name));
+	} catch(e) {
+		storageError();
+		return;
+	}
 	
 	if(s == null){
 		alert("保存されたセーブデータはありません。");
@@ -408,12 +413,55 @@ function saveOption(){
 //オプションロード
 function loadOption(){
 	var save_name = "tj_option";
-	var s = JSON.parse(localStorage.getItem(save_name));
+	try{
+		var s = JSON.parse(localStorage.getItem(save_name));
+		//データがなかったら戻る
+		if(s == null) return;
 
-	//データがなかったら戻る
-	if(s == null) return;
+		game_status['sound_mode'] = s['sound_mode'];
+		game_status['effect_mode'] = s['effect_mode'];
+		game_status['skip_mode'] = s['skip_mode'];
+	}catch(e){
+		storageError();
+	}
 
-	game_status['sound_mode'] = s['sound_mode'];
-	game_status['effect_mode'] = s['effect_mode'];
-	game_status['skip_mode'] = s['skip_mode'];
+	
+}
+//////////////////////////////////////////////////////////////////////////
+function storageError(){
+	var browser = judge_browser();
+	var str = "";
+	if(browser == "IE"){
+		str = "オプションロードに失敗しました。IEの場合、インターネットオプション＞詳細設定＞セキュリティの「DOMストレージを有効にする」にチェックをお願い致します。";
+	}
+	else{
+		str = "オプションロードに失敗しました";
+	}
+	str = "オプションロードに失敗しました。IEの場合、インターネットオプション＞詳細設定＞セキュリティの「DOMストレージを有効にする」にチェックをお願い致します。\nまたローカル環境ではIEは使用できませんのでChromeかFirefoxなどのブラウザをご使用ください。";
+
+
+	alert(str);
+	return;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//ブラウザ判別
+function judge_browser(){
+	if(navigator.userAgent.indexOf("MSIE") != -1){ // 文字列に「MSIE」が含まれている場合
+		 browser_type="IE";
+	}
+	else if(navigator.userAgent.indexOf("firefox") != -1){ // 文字列に「Firefox」が含まれている場合
+		 browser_type="FF";
+	}
+	else if(navigator.userAgent.indexOf("Chrome") != -1){ // 文字列に「Netscape」が含まれている場合
+		browser_type="chrome";
+	}
+	else if(navigator.userAgent.indexOf("Safari") != -1){ // 文字列に「Safari」が含まれている場合
+		browser_type="safari";
+	}
+	else{
+		browser_type="other";
+	}
+	
+	return browser_type;
 }
