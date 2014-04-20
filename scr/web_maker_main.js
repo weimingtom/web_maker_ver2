@@ -261,6 +261,7 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 	initialize: function (main_screen){
 		
 		enchant.Sprite.call(this, GAME_WIDTH, GAME_MAIN_HEIGHT);
+		this.image = game.assets['data/bg/black.jpg'];
 		this.x = 0;
 		this.y = 0;
 		this.age = 0;
@@ -285,14 +286,16 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 					var aa = i * 20;			//x座標の開始位置を計算
 					var xx = i + this.wipe_mx;	//幅を計算
 					if(xx > 20) xx = -1;
-					//1～20ドットのサイズになる時だけコピー		
-					if(xx > 0)　this.buffer.draw(game.assets[game_status['bg']],aa,0,xx,GAME_MAIN_HEIGHT,
+					//1～20ドットのサイズになる時だけコピー	
+					try{	
+						if(xx > 0)　this.buffer.draw(game.assets[game_status['bg']],aa,0,xx,GAME_MAIN_HEIGHT,
 								aa,0,xx,GAME_MAIN_HEIGHT);
+					}catch(e){
+					}
 					
 				}
 				this.image = this.buffer;
 				this.wipe_mx++;			//全体のカウンターを+1
-
 				if(this.age >= 60){
 					this.end();
 				}
@@ -400,7 +403,7 @@ var SUBSCREEN = enchant.Class.create(enchant.Sprite, {
 		
 		if(howto == "wipe"){
 			//this.image = this.main_screen.image;
-			this.buffer = this.main_screen.image;
+			this.buffer = this.main_screen.image; 
 		}
 		else{
 			this.image = suf;

@@ -103,7 +103,11 @@ function switchingSound(){
 		document.getElementById("bgm").pause();
 	}else{
 		game_status['sound_mode'] = true;
-		document.getElementById("bgm").play();
+		var d_cmd = new Array("bgm", game_status['bgm']);
+		bgmStart(d_cmd);
+		//document.getElementById("bgm").play();
+		//document.getElementById("bgm").src = game_status['bgm'];
+		//document.getElementById("bgm").play();
 	}
 	saveOption();
 	return;

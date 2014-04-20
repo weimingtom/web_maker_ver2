@@ -552,6 +552,7 @@ function bgmStart(d_cmd){
 		document.getElementById("bgm").autoplay = true;
 	}
 	else{
+		game_status['bgm'] = d_cmd[BGM_PATH];
 		return;
 	}
 	document.getElementById("bgm").volume = bgm_volume;
@@ -563,8 +564,9 @@ function bgmStart(d_cmd){
 	switch(s[1]){
 	case "ogg" :
 		if(canPlayOgg){		// oggをサポートしている
-			document.getElementById("bgm").src = d_cmd[BGM_PATH];
-			game_status['bgm'] = d_cmd[BGM_PATH];
+			var p = s[0] + ".ogg";
+			document.getElementById("bgm").src = p;
+			game_status['bgm'] = p;
 		}
 		else{				// mp3をサポートしている
 			var p = s[0] + ".mp3";
@@ -575,8 +577,9 @@ function bgmStart(d_cmd){
 	
 	case "mp3" :
 		if(canPlayMp3){		// mp3をサポートしている
-			document.getElementById("bgm").src = d_cmd[BGM_PATH];
-			game_status['bgm'] = d_cmd[BGM_PATH];
+			var p = s[0] + ".mp3";
+			document.getElementById("bgm").src = p;
+			game_status['bgm'] = p;
 		}else{				// oggをサポートしている
 			var p = s[0] + ".ogg";
 			document.getElementById("bgm").src=p;
